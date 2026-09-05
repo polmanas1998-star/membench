@@ -92,9 +92,15 @@ def test_la_chronologie_est_ordonnee(facts, tl):
     assert len(tl) == sum(len(f.statements) for f in facts)
 
 
-def test_le_corpus_refuse_de_depasser_ses_paires_disponibles():
-    with pytest.raises(ValueError, match="paires"):
-        build_corpus(seed=0, mix={"stable": 10_000})
+def test_le_corpus_refuse_au_dela_de_son_plafond():
+    """Le vocabulaire s'etend tout seul, donc le garde ne peut plus etre
+    « plus de paires que disponibles ». Il devient un plafond explicite, sinon
+    rendre le corpus extensible aurait retire le garde sans le remplacer."""
+    from membench.corpus import MAX_FACTS
+
+    build_corpus(seed=0, mix={"stable": MAX_FACTS})          # la borne passe
+    with pytest.raises(ValueError, match="plafond"):
+        build_corpus(seed=0, mix={"stable": MAX_FACTS + 1})  # au-dela, non
 
 
 # --------------------------------------------------------------------------
@@ -310,3 +316,19 @@ def test_le_reordonnancement_est_reproductible():
     pool = candidates(build_corpus(seed=1))
     assert _question("Karim", "livre_le_client", pool) == \
            _question("Karim", "livre_le_client", pool)
+
+
+def test_le_corpus_s_etend_sans_changer_de_registre():
+    """Une echelle qui change de style de nom cesse d'etre comparable.
+
+    Le vocabulaire fixe couvre 120 paires. Au-dela il s'etend par des entrees
+    numerotees du meme registre, et les 120 premieres paires restent celles
+    d'avant, sinon deux echelles mesureraient deux corpus differents.
+    """
+    petit = build_corpus(seed=4, mix={"stable": 100, "absent": 20})
+    grand = build_corpus(seed=4, mix={"stable": 300, "absent": 60})
+    assert len(petit) == 120 and len(grand) == 360
+    for f in grand:
+        assert f.relation in {x.relation for x in petit}, "relation inventee"
+
+

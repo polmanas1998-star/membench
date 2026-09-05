@@ -40,6 +40,11 @@ FORGET_THRESHOLD_DAYS = 111
 # modele, pour qu'aucun n'ait a le deviner.
 STALE_AFTER_DAYS = 45
 
+#: Plafond dur sur la taille d'un corpus. Le vocabulaire s'etend tout seul
+#: au-dela de 120 paires, ce qui a d'abord fait disparaitre le garde qui
+#: refusait l'impossible. Une borne explicite le remet.
+MAX_FACTS = 2000
+
 # Le jour ou l'on interroge. Toutes les dates du corpus sont anterieures.
 AS_OF = date(2026, 9, 5)
 
@@ -174,9 +179,24 @@ def build_corpus(seed: int = 0, mix: dict[Kind, int] | None = None,
     mix = dict(mix or DEFAULT_MIX)
     rng = random.Random(seed)
 
-    pairs = [(s, r) for s in _SUBJECTS for r in _RELATIONS]
-    rng.shuffle(pairs)
     needed = sum(mix.values())
+    subjects, relations = list(_SUBJECTS), list(_RELATIONS)
+    # Le vocabulaire fixe couvre 120 paires. Au-dela, on l'etend par des
+    # entrees NUMEROTEES du meme registre plutot que d'inventer du vocabulaire
+    # au coup par coup : une echelle qui change de style de nom au passage
+    # cesserait d'etre comparable aux precedentes, et on lirait un effet de
+    # lexique comme un effet de capacite.
+    if needed > MAX_FACTS:
+        raise ValueError(
+            f"{needed} faits demandes, plafond {MAX_FACTS}. Rendre le corpus "
+            "extensible a supprime le garde qui existait : sans borne, une "
+            "faute de frappe dans le melange ferait tourner la boucle "
+            "indefiniment. Releve MAX_FACTS en connaissance de cause."
+        )
+    while len(subjects) * len(relations) < needed:
+        subjects.append(f"Le chantier n{len(subjects) - len(_SUBJECTS) + 1}")
+    pairs = [(s, r) for s in subjects for r in relations]
+    rng.shuffle(pairs)
     if needed > len(pairs):
         raise ValueError(
             f"{needed} faits demandes pour {len(pairs)} paires (sujet, relation) "

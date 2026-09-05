@@ -75,6 +75,44 @@ the confidence gate does not notice.
 false memories, the layer is exactly as confident. No internal signal fixes
 this; only corroboration against something outside the trace can.
 
+## The capacity surface, 262 080 questions
+
+Six trace dimensions by five corpus sizes by 20 seeds, entirely offline. A
+product benchmark publishes one cell; the only thing this costs is local
+compute, so there is no excuse for it.
+
+Coverage:
+
+| d \ n | 52 | 104 | 208 | 312 | 416 |
+|---|---|---|---|---|---|
+| 256 | 0.240 | 0.135 | 0.053 | 0.026 | 0.019 |
+| 512 | 0.375 | 0.260 | 0.132 | 0.080 | 0.048 |
+| 1024 | 0.481 | 0.394 | 0.262 | 0.181 | 0.130 |
+| 2048 | 0.596 | 0.505 | 0.392 | 0.317 | 0.263 |
+| 4096 | **0.654** | 0.596 | 0.505 | 0.431 | 0.392 |
+| 8192 | **0.654** | **0.654** | 0.599 | 0.545 | 0.500 |
+
+![capacity surface](figures-4-capacity-surface.png)
+
+Three things one cell could not show.
+
+**Coverage saturates at 0.654.** At n = 52, going from d = 4096 to d = 8192 buys
+nothing. That is not a capacity limit, it is the corpus: roughly a third of every
+corpus is facts never stated or past the forgetting threshold, and refusing those
+is the correct answer. **The ceiling is the question set, not the memory.**
+
+**Overload makes it silent, not wrong.** At d = 256 and n = 416 coverage collapses
+to 0.019 while gated precision holds at 0.764. Across the other 29 cells precision
+never drops below 0.905. A store pushed past its capacity stops answering rather
+than starting to lie, which is the behaviour a confidence gate is for.
+
+**The gap to the scrambled control never falls below +0.750**, anywhere on the
+surface, including the most degraded corner. The task requires memory everywhere,
+not only at the operating point that suits us.
+
+Raw cells with their ranges: [`results-capacity-surface.json`](results-capacity-surface.json).
+Reproduce with `python grid.py --seeds 20`, about 26 minutes on a laptop.
+
 ## Where the errors are
 
 Outcome by question class, 8 seeds:

@@ -1,5 +1,13 @@
 __pycache__/
 *.pyc
-*.json
-*.log
 .chrome-*/
+
+# Sorties de campagne, propres a une machine et a un moment. Les resultats
+# PUBLIES vivent sous results-*.json et sont suivis, eux : un banc dont on ne
+# peut pas relire les cellules brutes n'est pas verifiable.
+run.json
+run.log
+grid.json
+scale.json
+smoke*.json
+*.log
