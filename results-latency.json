@@ -1,0 +1,186 @@
+{
+  "plateforme": "Windows",
+  "seuil_ms": 100.0,
+  "points": [
+    {
+      "n": 50,
+      "dim": 1024,
+      "apprentissage_ms": 0.243,
+      "chaud_ms": 1.35,
+      "froid_ms": 3.82,
+      "froid_median_ms": 8.75,
+      "trace_ko": 16.0,
+      "rapport_median_min": 2.29
+    },
+    {
+      "n": 100,
+      "dim": 1024,
+      "apprentissage_ms": 0.639,
+      "chaud_ms": 2.73,
+      "froid_ms": 9.46,
+      "froid_median_ms": 13.11,
+      "trace_ko": 16.0,
+      "rapport_median_min": 1.39
+    },
+    {
+      "n": 200,
+      "dim": 1024,
+      "apprentissage_ms": 1.16,
+      "chaud_ms": 5.8,
+      "froid_ms": 16.78,
+      "froid_median_ms": 22.9,
+      "trace_ko": 16.0,
+      "rapport_median_min": 1.36
+    },
+    {
+      "n": 500,
+      "dim": 1024,
+      "apprentissage_ms": 5.649,
+      "chaud_ms": 14.55,
+      "froid_ms": 36.48,
+      "froid_median_ms": 40.68,
+      "trace_ko": 16.0,
+      "rapport_median_min": 1.12
+    },
+    {
+      "n": 1000,
+      "dim": 1024,
+      "apprentissage_ms": 5.196,
+      "chaud_ms": 27.89,
+      "froid_ms": 78.98,
+      "froid_median_ms": 103.68,
+      "trace_ko": 16.0,
+      "rapport_median_min": 1.31
+    },
+    {
+      "n": 2000,
+      "dim": 1024,
+      "apprentissage_ms": 13.883,
+      "chaud_ms": 95.74,
+      "froid_ms": 158.8,
+      "froid_median_ms": 239.16,
+      "trace_ko": 16.0,
+      "rapport_median_min": 1.51
+    },
+    {
+      "n": 50,
+      "dim": 2048,
+      "apprentissage_ms": 0.402,
+      "chaud_ms": 2.17,
+      "froid_ms": 8.26,
+      "froid_median_ms": 15.86,
+      "trace_ko": 32.0,
+      "rapport_median_min": 1.92
+    },
+    {
+      "n": 100,
+      "dim": 2048,
+      "apprentissage_ms": 0.729,
+      "chaud_ms": 3.87,
+      "froid_ms": 10.72,
+      "froid_median_ms": 15.75,
+      "trace_ko": 32.0,
+      "rapport_median_min": 1.47
+    },
+    {
+      "n": 200,
+      "dim": 2048,
+      "apprentissage_ms": 0.927,
+      "chaud_ms": 6.52,
+      "froid_ms": 17.19,
+      "froid_median_ms": 21.93,
+      "trace_ko": 32.0,
+      "rapport_median_min": 1.28
+    },
+    {
+      "n": 500,
+      "dim": 2048,
+      "apprentissage_ms": 2.391,
+      "chaud_ms": 16.16,
+      "froid_ms": 43.25,
+      "froid_median_ms": 55.52,
+      "trace_ko": 32.0,
+      "rapport_median_min": 1.28
+    },
+    {
+      "n": 1000,
+      "dim": 2048,
+      "apprentissage_ms": 4.951,
+      "chaud_ms": 33.47,
+      "froid_ms": 87.59,
+      "froid_median_ms": 95.1,
+      "trace_ko": 32.0,
+      "rapport_median_min": 1.09
+    },
+    {
+      "n": 2000,
+      "dim": 2048,
+      "apprentissage_ms": 12.506,
+      "chaud_ms": 66.29,
+      "froid_ms": 209.55,
+      "froid_median_ms": 271.1,
+      "trace_ko": 32.0,
+      "rapport_median_min": 1.29
+    },
+    {
+      "n": 50,
+      "dim": 4096,
+      "apprentissage_ms": 0.298,
+      "chaud_ms": 1.97,
+      "froid_ms": 6.48,
+      "froid_median_ms": 12.29,
+      "trace_ko": 64.0,
+      "rapport_median_min": 1.9
+    },
+    {
+      "n": 100,
+      "dim": 4096,
+      "apprentissage_ms": 0.49,
+      "chaud_ms": 4.09,
+      "froid_ms": 12.29,
+      "froid_median_ms": 18.99,
+      "trace_ko": 64.0,
+      "rapport_median_min": 1.55
+    },
+    {
+      "n": 200,
+      "dim": 4096,
+      "apprentissage_ms": 1.108,
+      "chaud_ms": 9.67,
+      "froid_ms": 27.38,
+      "froid_median_ms": 36.42,
+      "trace_ko": 64.0,
+      "rapport_median_min": 1.33
+    },
+    {
+      "n": 500,
+      "dim": 4096,
+      "apprentissage_ms": 2.939,
+      "chaud_ms": 28.02,
+      "froid_ms": 72.57,
+      "froid_median_ms": 98.65,
+      "trace_ko": 64.0,
+      "rapport_median_min": 1.36
+    },
+    {
+      "n": 1000,
+      "dim": 4096,
+      "apprentissage_ms": 9.705,
+      "chaud_ms": 45.22,
+      "froid_ms": 140.64,
+      "froid_median_ms": 170.58,
+      "trace_ko": 64.0,
+      "rapport_median_min": 1.21
+    },
+    {
+      "n": 2000,
+      "dim": 4096,
+      "apprentissage_ms": 11.12,
+      "chaud_ms": 96.34,
+      "froid_ms": 255.11,
+      "froid_median_ms": 315.46,
+      "trace_ko": 64.0,
+      "rapport_median_min": 1.24
+    }
+  ]
+}

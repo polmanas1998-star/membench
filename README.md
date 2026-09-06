@@ -365,6 +365,65 @@ and 0.1781 on day 112. This is decay, not capacity. On any fact older than that,
 a system that simply keeps the transcript recovers everything and this one
 recovers nothing.
 
+## What the layer costs in milliseconds
+
+Everything above measures correctness. Nothing measured time, and the service
+carrying this layer runs on 512 MB and **one worker**: a second spent inside a
+query is a second in which no other conversation advances. A perfect layer that
+blocks the process is not deployable, and no number in this file said so.
+
+The trace is cached and invalidated on every `learn`, which splits the cost in
+two. **Cold** is what a real conversation pays: you learn, then you ask, turn
+after turn, and the trace is rebuilt from the fact list each time. Warm is the
+cost of a second question asked straight after the first.
+
+Minimum over 60 trials, `d = 2048`, Windows, Python 3.11.
+
+| facts | learn, per statement | warm query | **cold query** | trace size |
+|---|---|---|---|---|
+| 50 | 0.40 ms | 2.2 ms | **8.3 ms** | 32 KB |
+| 100 | 0.73 ms | 3.9 ms | **10.7 ms** | 32 KB |
+| 200 | 0.93 ms | 6.5 ms | **17.2 ms** | 32 KB |
+| 500 | 2.39 ms | 16.2 ms | **43.3 ms** | 32 KB |
+| 1000 | 4.95 ms | 33.5 ms | **87.6 ms** | 32 KB |
+| 2000 | 12.51 ms | 66.3 ms | **209.6 ms** | 32 KB |
+
+**Constant memory, linear time.** The trace stays at 32 KB whatever N is, which
+is the whole promise of a superposition and this column verifies it. The clock
+does not: rebuilding from the fact list is O(N), so a query costs proportionally
+more as the store fills.
+
+That tension is deliberate and documented in the library: the trace is rebuilt
+rather than patched, because every weight depends on `now`, and an incrementally
+maintained trace would drift away from the facts it claims to represent, in
+silence. Correctness was chosen over speed. This table is the price of that
+choice, stated rather than assumed.
+
+Taking 100 ms as the point where a single worker visibly stalls: `d = 1024` and
+`d = 2048` cross it at 2000 facts, `d = 4096` at 1000. For a per-user store of a
+few hundred facts, the cold query stays under 50 ms and the question does not
+arise. For a store of thousands, it does, and the answer is incremental
+maintenance, not a bigger machine.
+
+### The measurement was contaminated, and how that was caught
+
+The first series was taken while a paid campaign ran in the background. At
+`d = 2048` it read 250 ms at 500 facts, 924 ms at 1000, then 219 ms at 2000:
+not monotone, therefore impossible for a linear cost, therefore contaminated.
+
+Under contention every timing is inflated by a random amount that is always
+**positive**; noise never cancels, it only adds. A median absorbs it without
+removing it. The **minimum** over many trials keeps the run in which the machine
+interfered least, and that is the estimator this bench uses.
+
+The ratio of median to minimum is now computed for every row and printed. On a
+quiet machine it sits between 1.1 and 1.5. Above 2.0 the row is labelled
+contaminated and excluded from the thresholds rather than published. This repo
+has paid for a timing taken under its own background load once before, at the
+cost of a figure published on GitHub and on Reddit.
+
+Reproduce with `python latency.py`.
+
 ## External validity
 
 The corpus is synthetic: 104 generated subject-relation-object facts about a
@@ -383,7 +442,13 @@ per seed. It does **not** buy:
   Interference was not absent, it was near maximal, and nobody had counted it.
   What is genuinely absent is natural interference *structure*: which subjects
   attract many relations is uniform here, where a real transcript is heavy-tailed;
-- **a second domain** — one practice, one vocabulary of 29 objects;
+- ~~**a second domain**~~ — **withdrawn as a limitation, with a reason.**
+  `symbol(name, dim)` derives each vector from a blake2b hash of the folded
+  name, so any two distinct names are near-orthogonal whatever they mean. The
+  vocabulary cannot influence a single number in this file, and a second domain
+  built the same way would measure nothing. What a second domain would really
+  test is a different fact *distribution*, not a different set of words, and
+  that is covered by `interference.py`;
 - **a second base model** — every model-side number was taken on
   `openai/gpt-oss-120b`;
 - **real ageing** — time is simulated.
@@ -438,6 +503,7 @@ after the last one ends.
 | `poisoning.py` | how many repetitions of a lie beat the truth |
 | `ablation.py` | what each guard buys, measured by removing it |
 | `calibration.py` | whether the confidence score separates right from wrong |
+| `latency.py` | milliseconds per query, against store size |
 | `gate_sweep.py` | the precision/coverage curve |
 | `error_analysis.py` | outcome by question class |
 | `bootstrap_report.py` | differences with intervals |
