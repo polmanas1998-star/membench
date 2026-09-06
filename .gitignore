@@ -11,3 +11,7 @@ grid.json
 scale.json
 smoke*.json
 *.log
+
+# Le registre du budget : quand ce compte a brule son dernier burst. Propre a
+# une machine et a une cle, il ne se partage pas.
+.budget.json

@@ -156,3 +156,65 @@ def test_ordre_des_bras_le_plus_cher_et_inconnu_d_abord():
     assert cp.ORDRE[0] == max(couts, key=couts.get)
     suite = [couts[nom] for nom in cp.ORDRE[1:]]
     assert suite == sorted(suite)
+
+
+# --- La fenetre glissante, et les deux erreurs d'horloge qui l'ont faussee ---
+
+def test_maintenant_porte_son_fuseau():
+    """Le defaut, en une assertion.
+
+    Le journal de campagne ecrivait UTC sans le dire : `[18:50:54]` a ete lu
+    comme 18 h 50 alors qu'il etait 20 h 50 a Paris, et l'heure de reouverture
+    qu'on en tirait se trompait de deux heures. Une heure NAIVE n'est pas une
+    heure, c'est un nombre qui ressemble a une heure.
+    """
+    assert cp.maintenant().tzinfo is not None
+
+
+def test_rouvre_a_ajoute_la_fenetre_et_garde_le_fuseau():
+    from datetime import datetime
+    fin = datetime.fromisoformat("2026-09-06T19:45:22+02:00")
+    ouv = cp.rouvre_a(fin)
+    assert (ouv - fin).total_seconds() == cp.FENETRE_HEURES * 3600
+    assert ouv.utcoffset() == fin.utcoffset()
+    assert ouv.isoformat() == "2026-09-07T19:45:22+02:00"
+
+
+def test_registre_aller_retour_conserve_l_instant():
+    """Ecrire puis relire ne doit pas deplacer l'heure d'un fuseau."""
+    import tempfile
+    from datetime import datetime
+    fin = datetime.fromisoformat("2026-09-06T19:45:22+02:00")
+    with tempfile.TemporaryDirectory() as d:
+        chemin = f"{d}/registre.json"
+        cp.noter_depense(fin, 348244, chemin)
+        relu = cp.derniere_depense(chemin)
+    assert relu == fin
+    assert relu.utcoffset() == fin.utcoffset()
+
+
+def test_l_heure_relue_se_compare_a_maintenant_sans_lever():
+    """Une heure relue NAIVE ferait lever la soustraction dans `main()`, apres
+    le devis et juste avant la depense : le pire endroit."""
+    import tempfile
+    from datetime import datetime
+    with tempfile.TemporaryDirectory() as d:
+        chemin = f"{d}/registre.json"
+        cp.noter_depense(datetime.fromisoformat("2026-09-06T19:45:22+02:00"),
+                         1000, chemin)
+        reste = cp.rouvre_a(cp.derniere_depense(chemin)) - cp.maintenant()
+    assert reste.total_seconds() != 0
+
+
+def test_registre_absent_ou_illisible_rend_none_sans_lever():
+    """Un registre corrompu rend l'heure INCONNUE, jamais interdite : bloquer
+    ici transformerait un fichier abime en panne totale du banc."""
+    import io as _io
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        assert cp.derniere_depense(f"{d}/rien.json") is None
+        for contenu in ("pas du json", "{}", '{"fin": null}',
+                        '{"fin": "pas une date"}', '{"fin": 42}'):
+            chemin = f"{d}/abime.json"
+            _io.open(chemin, "w", encoding="utf-8").write(contenu)
+            assert cp.derniere_depense(chemin) is None, contenu

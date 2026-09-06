@@ -8,14 +8,15 @@ numerateur.
 CE QUE CE FICHIER CORRIGE, ET CE QUE CA A COUTE
 -----------------------------------------------
 La campagne du 06/09 a pose les 104 questions du corpus a quatre bras, dans
-l'ordre D+, C, A, B. Elle a rendu trois bras et a perdu le quatrieme :
+l'ordre D+, C, A, B. Elle a rendu trois bras et a perdu le quatrieme (heures de
+Paris, le journal les ecrivait en UTC sans le dire) :
 
-    17:45  seed1/A   termine
-    17:50  seed1/B : plafond quotidien atteint, 198 839 consommes -> sommeil
-    18:50  seed1/B : plafond quotidien atteint, 199 335 consommes -> sommeil
+    19:45  seed1/A   termine
+    19:50  seed1/B : plafond quotidien atteint, 198 839 consommes -> sommeil
+    20:50  seed1/B : plafond quotidien atteint, 199 335 consommes -> sommeil
 
-Une heure de siestes pour zero question. Deux defauts, tous deux reparables
-ici, aucun des deux dans le code de mesure :
+Une heure de siestes pour zero question. TROIS defauts, aucun dans le code de
+mesure :
 
 1. LE BRAS LE PLUS CHER ET LE SEUL INCONNU PASSAIT EN DERNIER. Quand le seau
    se vide, on perd ce qui RESTE a faire. On perdait donc exactement le seul
@@ -30,6 +31,14 @@ ici, aucun des deux dans le code de mesure :
    reservation = 710 000, soit trois jours et demi de budget. Le devis est
    maintenant IMPRIME AVANT le premier appel, et la campagne REFUSE de partir
    quand il ne tient pas.
+
+3. L'HEURE DE REOUVERTURE SE RETENAIT AU LIEU DE SE DERIVER. La fenetre du
+   plafond GLISSE : le budget brule a 19 h 45 ne ressort qu'a 19 h 45 le
+   lendemain. Une note disait « vers 13 h » ; elle parlait de l'avant-veille,
+   et le journal, en UTC sans le dire, a fait lire 17 h 45 pour 19 h 45. Deux
+   erreurs d'horloge dans le meme calcul. Cette campagne DATE desormais son
+   depart et sa fin dans son JSON, imprime l'heure de reouverture en partant,
+   et refuse de repartir avant celle de la campagne precedente.
 
 POURQUOI UN ECHANTILLON PROPORTIONNEL, ET PAS EQUILIBRE
 --------------------------------------------------------
@@ -53,7 +62,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
+from datetime import datetime, timedelta
 from typing import Sequence
 
 from membench.arms import run
@@ -81,6 +92,20 @@ COUT_PAR_QUESTION = {"B": 3483.0, "D+": 665.5, "A": 1280.1, "C": 1402.9}
 RESERVATION_MESUREE = 69_213 + 145_899 + 133_132
 REEL_MESURE = 198_839
 FACTEUR_REEL = RESERVATION_MESUREE / REEL_MESURE
+
+#: La fenetre du plafond quotidien GLISSE : ce qui est brule maintenant ne
+#: ressort qu'apres ce delai, et rien ne se recycle a minuit.
+FENETRE_HEURES = 24.0
+
+#: Le registre du budget, partage par toutes les campagnes du depot. Il ne
+#: contient qu'une chose : QUAND le dernier vrai burst s'est termine.
+#:
+#: Il est volontairement SEPARE du fichier de resultats. Une campagne qui part
+#: pour la premiere fois n'a pas de resultats a lire, et c'est exactement la
+#: campagne qu'il faut proteger : celle qui ne sait pas encore que le seau est
+#: vide. Le registre, lui, survit a un changement de `--out`, a un nouveau
+#: banc, et a un fichier de resultats efface.
+JOURNAL_BUDGET = ".budget.json"
 
 #: L'ORDRE D'EXECUTION EST UNE DECISION DE CONCEPTION. B d'abord parce qu'il
 #: est le seul inconnu et le plus cher ; les autres par cout croissant, pour
@@ -134,6 +159,53 @@ def echantillon(facts: Sequence[Fact], n: int, seed: int = 1) -> list[Fact]:
             for y in rng.sample(par_genre[k], part[k])]
 
 
+def maintenant() -> datetime:
+    """L'heure LOCALE, avec son fuseau attache.
+
+    Toutes les heures de ce fichier passent par ici. Le journal de campagne
+    ecrivait UTC sans le dire ; un `[18:50:54]` a ete lu comme 18 h 50 alors
+    qu'il etait 20 h 50 a Paris, et l'heure de reouverture qu'on en deduisait
+    se trompait de deux heures. Une heure sans fuseau est une heure fausse des
+    qu'elle sert a calculer autre chose.
+    """
+    return datetime.now().astimezone()
+
+
+def rouvre_a(fin: datetime) -> datetime:
+    """Quand le budget brule a `fin` ressort de la fenetre glissante."""
+    return fin + timedelta(hours=FENETRE_HEURES)
+
+
+def derniere_depense(chemin: str = JOURNAL_BUDGET) -> datetime | None:
+    """La fin du dernier burst reel, si le registre en garde la trace.
+
+    C'est ce qui remplace le fait de RETENIR une heure. La note de la veille
+    disait « le budget revient vers 13 h » ; elle parlait de l'avant-veille, et
+    la campagne suivante s'y est fiee.
+    """
+    if not os.path.isfile(chemin):
+        return None
+    try:
+        with open(chemin, encoding="utf-8") as fh:
+            fin = json.load(fh).get("fin")
+        return datetime.fromisoformat(fin) if fin else None
+    except (ValueError, OSError, TypeError):
+        # Un registre illisible ne doit pas empecher une campagne de partir :
+        # il rend l'heure INCONNUE, pas interdite. Bloquer ici transformerait
+        # un fichier corrompu en panne totale du banc.
+        return None
+
+
+def noter_depense(fin: datetime, reserves: float,
+                  chemin: str = JOURNAL_BUDGET) -> None:
+    """Inscrit au registre quand ce burst s'est termine."""
+    with open(chemin, "w", encoding="utf-8") as fh:
+        json.dump({"fin": fin.isoformat(), "jetons_reserves": round(reserves),
+                   "fenetre_heures": FENETRE_HEURES,
+                   "rouvre_a": rouvre_a(fin).isoformat()},
+                  fh, indent=2)
+
+
 def devis(n: int) -> dict:
     """Ce que la campagne va couter, calcule AVANT le premier appel."""
     reservation = {k: v * n for k, v in COUT_PAR_QUESTION.items()}
@@ -185,6 +257,27 @@ def main() -> int:
     if d["part_du_jour"] > 0.85:
         print("  Marge etroite : un depassement de 15 % suffit a couper le "
               "dernier bras.")
+
+    # LA FENETRE GLISSANTE, DERIVEE ET NON RETENUE. La campagne precedente a
+    # date sa fin ; le budget qu'elle a brule ne ressort que 24 h plus tard.
+    precedente = derniere_depense()
+    ouverture = rouvre_a(precedente) if precedente else None
+    if ouverture:
+        reste = (ouverture - maintenant()).total_seconds() / 3600
+        if reste > 0:
+            print()
+            print(f"  Campagne precedente terminee le "
+                  f"{precedente.strftime('%d/%m a %H:%M %z')}.")
+            print(f"  Son budget ne ressort de la fenetre glissante que le "
+                  f"{ouverture.strftime('%d/%m a %H:%M %z')}, dans "
+                  f"{reste:.1f} h.")
+            if not a.devis and not a.oui:
+                print()
+                print("Rien n'a ete depense. Attendez cette heure, ou "
+                      "passez --oui si vous")
+                print("savez que le budget a ete rendu autrement.")
+                return 3
+
     if a.devis:
         # Le devis se lit quand le budget est VIDE, la veille de la campagne.
         # Il ne doit toucher ni la cle ni le reseau, sans quoi l'outil qui
@@ -208,8 +301,10 @@ def main() -> int:
     print(hdr)
     print("-" * len(hdr))
 
+    debut = maintenant()
     sortie: dict = {"questions": len(sample), "graine": a.seed,
-                    "genres": genres, "devis": d, "bras": {}}
+                    "genres": genres, "devis": d,
+                    "debut": debut.isoformat(), "bras": {}}
     consomme = 0.0
     for nom in ORDRE:
         try:
@@ -246,6 +341,10 @@ def main() -> int:
         with open(a.out, "w", encoding="utf-8") as fh:
             json.dump(sortie, fh, indent=2, ensure_ascii=False)
 
+    fin = maintenant()
+    sortie["fin"] = fin.isoformat()
+    if consomme:
+        noter_depense(fin, consomme)
     sortie["reservation_reelle"] = consomme
     sortie["ecart_au_devis"] = (consomme / d["reservation"]
                                 if d["reservation"] else None)
@@ -258,6 +357,11 @@ def main() -> int:
     print(f"429 par minute : {m.rate_limited}, attente cumulee "
           f"{m.waited_seconds:.0f} s, plafond par minute {TPM_CEILING}")
     print(f"Ecrit dans {a.out}.")
+    print(f"Budget brule entre {debut.strftime('%H:%M')} et "
+          f"{fin.strftime('%H:%M %z')}.")
+    print(f"Il ne ressort de la fenetre glissante que le "
+          f"{rouvre_a(fin).strftime('%d/%m a %H:%M %z')} : aucune campagne\n"
+          f"utile avant cette heure.")
     print("\nLe cout par reponse juste = jetons totaux / reponses justes. Un "
           "bras qui se tait n'y gagne rien.")
     return 0

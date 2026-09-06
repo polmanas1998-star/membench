@@ -490,17 +490,20 @@ Not a failure, a measurement. Pasting the whole transcript costs **3 483 tokens
 per question**, so one seed of 104 questions needs about **362 000 tokens**. The
 account's ceiling is **200 000 tokens per day**.
 
-The campaign hit it, and the log is the clearest statement of the result:
+The campaign hit it, and the log is the clearest statement of the result
+(Paris time; the log itself wrote UTC without saying so, which is its own entry
+below):
 
-    17:50  daily ceiling reached: 200 000/day, 198 839 consumed -> sleep 15 min
-    18:05  200 000 consumed -> sleep 15 min
-    18:20  197 917 consumed -> sleep 15 min
-    18:50  199 335 consumed -> sleep 15 min
+    19:50  daily ceiling reached: 200 000/day, 198 839 consumed -> sleep 15 min
+    20:05  200 000 consumed -> sleep 15 min
+    20:20  197 917 consumed -> sleep 15 min
+    20:50  199 335 consumed -> sleep 15 min
 
-Three hours of naps and no progress. The window is **rolling, not reset at
+An hour of naps and no progress. The window is **rolling, not reset at
 midnight**: the counter drifts between 197 917 and 200 000 instead of dropping,
 so what frees up is only what falls out of the trailing window, a few hundred
-tokens an hour.
+tokens an hour. The whole 200 000 was spent between 19:28 and 19:45, so it
+comes back at 19:45 the next day, not at any round hour.
 
 So the honest line is not "not yet measured". It is: **on this account, a single
 seed of full-context cannot be measured at all**, and that is itself the cost
@@ -542,6 +545,21 @@ the bucket empties you lose what is still ahead of you, so it lost the only
 number it existed to produce and kept three arms already measured. Arms now run
 B first, then the rest by increasing cost, and each one's result is written to
 disk as soon as it lands.
+
+**The reopening time is derived, not remembered.** A note said the budget
+"comes back around 13:00"; it was describing a burst from the day before. The
+campaign log made it worse by stamping UTC without labelling it, so `18:50` was
+read as 18:50 when the clock in the room said 20:50. Two clock errors in the
+same calculation, in opposite directions, and the conclusion was two hours
+early. The log now stamps local time with its offset (`19:50:49+0200`), a
+campaign records when it started and finished, and a run refuses to start while
+the previous burst is still inside the rolling window:
+
+      Campagne precedente terminee le 06/09 a 19:45 +0200.
+      Son budget ne ressort de la fenetre glissante que le 07/09 a 19:45 +0200,
+      dans 21.9 h.
+
+    Rien n'a ete depense.
 
 **The subsample is proportional to the corpus, not balanced across kinds.**
 Equal strata would measure each kind more precisely and make the overall rates

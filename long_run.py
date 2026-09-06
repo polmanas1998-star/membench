@@ -20,7 +20,7 @@ import argparse
 import json
 import pathlib
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 
 from membench.arms import run as run_arm
 from membench.corpus import build_corpus, candidates, timeline
@@ -41,7 +41,19 @@ ORDER = ["D+", "C", "A", "B"]
 
 
 def stamp() -> str:
-    return datetime.now(timezone.utc).strftime("%H:%M:%S")
+    """L'heure LOCALE, avec son decalage, parce que ce journal est lu par un
+    humain qui regarde sa montre.
+
+    Cette fonction ecrivait UTC. Un `[18:50:54]` a ete lu comme 18 h 50 alors
+    qu'il etait 20 h 50 a Paris, et la conclusion qui en decoulait, l'heure a
+    laquelle la fenetre glissante rouvre, se trompait de deux heures. Le
+    depot avait deja paye cette lecon le 30/08 sur six sites : une horloge de
+    datacenter ne sert pas a fabriquer un calendrier humain.
+
+    Le decalage est ECRIT dans l'horodatage, pas suppose : `19:50:49+0200` se
+    relit sans connaitre le fuseau de la machine qui l'a produit.
+    """
+    return datetime.now().astimezone().strftime("%H:%M:%S%z")
 
 
 def main() -> int:
