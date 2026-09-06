@@ -459,18 +459,64 @@ conditions: precision, refusal behaviour, the shape of the confidence curve and
 the location of the forgetting threshold are properties of the algorithm.
 Everything comparative is a hypothesis to be re-tested on real transcripts.
 
-## Withdrawn, and not yet measured
+## Cost per correct answer, re-taken
 
-**Withdrawn.** A cost comparison against a full-transcript arm and a top-k
-retrieval arm was measured on 24 questions and is not published. Those runs used
-a candidate list sorted identically in every question, so a model's position
-preference could not be separated from its memory. The confound was found and
-fixed after the measurement; the numbers will be re-taken, not amended.
+The earlier cost comparison was withdrawn: it used a candidate list sorted
+identically in every question, so a model's position preference could not be
+separated from its memory. The list is now reshuffled per question from a seed
+derived from the question, identical across arms, and the numbers below are the
+re-measurement rather than an amendment.
 
-**Not yet measured.** Those same arms across seeds at full corpus size. The free
-tier allows 200 000 tokens a day and the measured refill after exhausting it is
-663 tokens an hour, about one turn an hour, so a campaign has to start a day
-after the last one ends.
+One seed, 104 questions, `openai/gpt-oss-120b`, `d = 2048`.
+
+| arm | cover | precision | halluc | stale err | **tokens per correct answer** |
+|---|---|---|---|---|---|
+| **D+ layer, then model** | 0.510 | **1.000** | **0.000** | **0.000** | **1 306** |
+| C retrieval top-k | 0.808 | 0.964 | 0.091 | 0.056 | 1 801 |
+| A model alone | 0.000 | n/m | 0.000 | 0.000 | never correct |
+| B full transcript | — | — | — | — | **did not fit in a day** |
+
+The layer answers half as often and is right every time it does. Top-k answers
+more, invents on 9 % of facts never stated, and serves a superseded value 5.6 %
+of the time. Per correct answer it costs **1.38x more**.
+
+Arm A is the witness that matters most: 133 132 tokens spent to answer nothing
+correctly, because a model with no memory cannot answer a memory question. It
+is what makes the task's difficulty visible rather than assumed.
+
+### The full-transcript arm does not fit inside a day
+
+Not a failure, a measurement. Pasting the whole transcript costs **3 483 tokens
+per question**, so one seed of 104 questions needs about **362 000 tokens**. The
+account's ceiling is **200 000 tokens per day**.
+
+The campaign hit it, and the log is the clearest statement of the result:
+
+    17:50  daily ceiling reached: 200 000/day, 198 839 consumed -> sleep 15 min
+    18:05  200 000 consumed -> sleep 15 min
+    18:20  197 917 consumed -> sleep 15 min
+    18:50  199 335 consumed -> sleep 15 min
+
+Three hours of naps and no progress. The window is **rolling, not reset at
+midnight**: the counter drifts between 197 917 and 200 000 instead of dropping,
+so what frees up is only what falls out of the trailing window, a few hundred
+tokens an hour.
+
+So the honest line is not "not yet measured". It is: **on this account, a single
+seed of full-context cannot be measured at all**, and that is itself the cost
+statement. The other three arms together fit in one day; the fourth alone does
+not fit in two.
+
+⚠ Two accounting systems, and confusing them costs a day. The per-minute
+ceiling debits `prompt + reservation`, which is what `tokens_total` reports
+here. The daily ceiling debits **actual** tokens, roughly 1.7x lower. Reading a
+daily budget with per-minute arithmetic overestimates consumption; reading it
+the other way round underestimates it, which is the mistake made while planning
+this campaign.
+
+Next measurement, sized to fit: all four arms on a stratified 40-question
+subsample, about 264 000 tokens by reservation and roughly 152 000 actual. Same
+questions for every arm, so the comparison stays like for like.
 
 ## Running it on someone else's machine
 
