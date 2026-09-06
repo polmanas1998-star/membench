@@ -247,30 +247,36 @@ def test_les_vitesses_chronometrees_collent_a_la_campagne_mesuree():
         r = mesure[f"seed1/{bras}"]
         chrono = r["seconds"] / r["asked"]
         assert abs(cp.SECONDES_PAR_QUESTION[bras] - chrono) < 0.02, bras
-    # B n'a jamais tourne : sa valeur est une EXTRAPOLATION, pas une mesure,
-    # et elle doit rester coherente avec le cout par jeton de C et A.
+    # B a ete chronometre a part, sur trois questions : 1,19 / 2,43 / 2,51 s.
+    #
+    # Il avait d'abord ete EXTRAPOLE en supposant le temps proportionnel aux
+    # jetons de reservation, ce qui donnait 12,3 s, cinq fois trop. Ce test
+    # garde la refutation : la valeur retenue doit rester LOIN de ce que cette
+    # extrapolation predit, sinon quelqu'un l'a refaite.
     par_jeton = [mesure[f"seed1/{b}"]["seconds"] / mesure[f"seed1/{b}"]["asked"]
                  / cp.COUT_PAR_QUESTION[b] for b in ("C", "A")]
-    attendu = cp.COUT_PAR_QUESTION["B"] * sum(par_jeton) / len(par_jeton)
-    assert abs(cp.SECONDES_PAR_QUESTION["B"] - attendu) < 0.5
+    extrapole = cp.COUT_PAR_QUESTION["B"] * sum(par_jeton) / len(par_jeton)
+    assert cp.SECONDES_PAR_QUESTION["B"] == 2.43
+    assert extrapole > 3 * cp.SECONDES_PAR_QUESTION["B"], extrapole
 
 
-def test_le_cout_de_B_se_derive_du_prompt_et_non_du_neant():
-    """Le bras B n'a JAMAIS termine une question, et son cout est pourtant le
-    chiffre qui porte la conclusion publiee (il ne tient pas dans une journee).
+def test_le_cout_de_B_ne_se_derive_PAS_du_comptage_de_caracteres():
+    """Une derivation qui s'accordait avec elle-meme et se trompait de 11 %.
 
-    Un nombre sans source dans un README public est une dette : celui-ci valait
-    3 483 et personne, moi compris, ne pouvait dire d'ou il venait. Il est
-    maintenant DERIVE, et ce test refait la derivation entierement :
+    Le cout par question du bras B porte la conclusion publiee, et il n'avait
+    aucune source. J'ai voulu le reconstruire sans depenser : compter les
+    caracteres du prompt, convertir avec le rapport caracteres/jeton des bras
+    qui avaient tourne. A donne 2,65, C donne 2,76 ; deux prompts de longueurs
+    tres differentes qui s'accordent a 4 % pres, ce qui ressemblait beaucoup a
+    une validation.
 
-      * on construit le prompt de chaque bras par le chemin de code de la
-        campagne, jamais une copie a la main ;
-      * on calibre le rapport caracteres/jeton sur A et C, dont le fournisseur
-        a RAPPORTE les jetons de prompt ;
-      * on applique ce rapport a B et on compare a la constante.
+    Trois appels reels ont dit 3 481, 3 481, 3 484. La derivation disait 3 861.
 
-    Si le prompt de B change, ce test rougit, ce qui est exactement ce qu'on
-    veut d'un chiffre qu'aucune campagne ne peut verifier pour l'instant.
+    Ce test garde la LECON, pas la methode : il verifie que le rapport de B
+    s'ecarte VRAIMENT de celui des deux autres, donc qu'un futur lecteur ne
+    refera pas la meme conversion en croyant bien faire. La composition du
+    texte decide : le prompt de B est fait de dates ISO et d'une structure
+    repetee, qui se tokenisent bien plus densement que de l'anglais.
     """
     import json
     from membench.corpus import build_corpus, candidates, timeline
@@ -286,23 +292,33 @@ def test_le_cout_de_B_se_derive_du_prompt_et_non_du_neant():
         a.observe(tl)
         ctx = a._context(q.subject, q.relation)
         pose = _question(q.subject, q.relation, pool)
-        return PROMPTS[a._prompt] + "\n" + (f"{ctx}\n\n{pose}" if ctx else pose)
+        saut = chr(10)
+        corps = f"{ctx}{saut}{saut}{pose}" if ctx else pose
+        return PROMPTS[a._prompt] + saut + corps
 
     with open("results-cost-seed1.json", encoding="utf-8") as fh:
         mesure = json.load(fh)
 
-    rapports = []
+    rapports = {}
     for nom, cls in (("A", StatelessArm), ("C", RetrievalArm)):
         jetons = mesure[f"seed1/{nom}"]["tokens_per_turn"] - _ModelArm.MAX_TOKENS
-        rapports.append(len(prompt_complet(cls)) / jetons)
-    # Deux prompts de longueurs tres differentes doivent donner le MEME
-    # rapport, sinon la conversion ne vaut rien et B n'est pas derivable.
-    assert abs(rapports[0] - rapports[1]) / max(rapports) < 0.10, rapports
+        rapports[nom] = len(prompt_complet(cls)) / jetons
+    # Les deux points de calibrage s'accordent : c'est ce qui rendait la
+    # conversion credible.
+    assert abs(rapports["A"] - rapports["C"]) < 0.15
 
-    ratio = sum(rapports) / len(rapports)
-    attendu = len(prompt_complet(FullContextArm)) / ratio + _ModelArm.MAX_TOKENS
-    ecart = abs(cp.COUT_PAR_QUESTION["B"] - attendu) / attendu
-    assert ecart < 0.03, (cp.COUT_PAR_QUESTION["B"], attendu, ecart)
+    jetons_B = COUT_B_MESURE - _ModelArm.MAX_TOKENS
+    rapport_B = len(prompt_complet(FullContextArm)) / jetons_B
+    # Et B tombe nettement en dehors : la conversion ne se transporte pas.
+    assert rapport_B > max(rapports.values()) * 1.10, (rapport_B, rapports)
+
+
+#: Ce que trois appels reels ont mesure le 06/09 au soir : 3 481, 3 481, 3 484.
+COUT_B_MESURE = 3481.0
+
+
+def test_la_constante_de_B_est_bien_la_valeur_MESUREE():
+    assert cp.COUT_PAR_QUESTION["B"] == COUT_B_MESURE
 
 
 def test_le_bras_B_ne_tient_toujours_pas_dans_une_journee():
