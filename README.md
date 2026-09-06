@@ -18,8 +18,9 @@ constant so the memory is the only thing that varies.
 
 ```
 pip install numpy
-export HOLOMEM_PATH=/path/to/holomem     # github.com/polmanas1998-star/holomem
+pip install git+https://github.com/polmanas1998-star/holomem
 python sweep.py --seeds 8                # offline, no API key, ~1 minute
+python -m pytest                         # 73 tests, offline
 ```
 
 Full write-up with figures: [`membench-report.pdf`](membench-report.pdf).
@@ -470,6 +471,47 @@ fixed after the measurement; the numbers will be re-taken, not amended.
 tier allows 200 000 tokens a day and the measured refill after exhausting it is
 663 tokens an hour, about one turn an hour, so a campaign has to start a day
 after the last one ends.
+
+## Running it on someone else's machine
+
+Measured 06/09/2026 on a fresh clone, no configuration: **20 failures out of
+73**. Nothing was broken. `holomem` could not be imported, and every test that
+needs it discovered that on its own, mid-run, with a different opaque
+`ModuleNotFoundError` each time.
+
+Twenty red lines say "this repo is broken" far louder than a README says
+"install holomem first", and that verdict is reached before a reader has seen a
+single number. For a public benchmark it is the one defect that costs
+everything and appears before anything else.
+
+Two fixes, one in each repository.
+
+`holomem` is now installable: it carried no packaging at all, so the only route
+was to clone it by hand and point an environment variable at the folder.
+
+And this repo now says so once, at the top of the run, instead of failing
+seventy-three times in its own words:
+
+    holomem : ABSENT, tests de la couche sautes.
+    pip install git+https://github.com/polmanas1998-star/holomem
+
+A fresh clone with nothing installed now reads **52 passed, 21 skipped, 0
+failed**. The skips are honest: they announce their reason and count separately
+from success. Making them green without the library would be worse than the
+twenty failures, because the repo would then be lying about what it verified.
+
+The environment variable still works, and a sibling clone is found without it.
+
+### The first fix was a text search, which is the wrong instrument
+
+It marked tests by looking for `holomem` or `DermiozArm` in their source. That
+took 20 failures down to 2, and stopped there: two tests reach the layer
+**indirectly**, through the arm table in `long_run`, without ever writing those
+words. A textual detector sees what is named, never what is reached.
+
+It now inspects the exception actually raised, and only an `ImportError` whose
+missing module is `holomem`, so a genuine failure on another dependency is
+never quietly turned into a skip.
 
 ## Harness
 
