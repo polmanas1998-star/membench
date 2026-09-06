@@ -1,0 +1,186 @@
+{
+  "dim": 2048,
+  "graines": 24,
+  "points": [
+    {
+      "verites": 1,
+      "mensonges": 1,
+      "verite": 0.4583333333333333,
+      "silence": 0.08333333333333333,
+      "mensonge": 0.4583333333333333,
+      "z_median": 4.401,
+      "verdict": "resiste"
+    },
+    {
+      "verites": 1,
+      "mensonges": 2,
+      "verite": 0.08333333333333333,
+      "silence": 0.041666666666666664,
+      "mensonge": 0.875,
+      "z_median": 5.332,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 3,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.57,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 4,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.344,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 5,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.458,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 6,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.265,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 8,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.529,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 10,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.457,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 15,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.307,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 20,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.341,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 1,
+      "verite": 1.0,
+      "silence": 0.0,
+      "mensonge": 0.0,
+      "z_median": 6.198,
+      "verdict": "resiste"
+    },
+    {
+      "verites": 3,
+      "mensonges": 2,
+      "verite": 0.9166666666666666,
+      "silence": 0.0,
+      "mensonge": 0.08333333333333333,
+      "z_median": 5.299,
+      "verdict": "resiste"
+    },
+    {
+      "verites": 3,
+      "mensonges": 3,
+      "verite": 0.4583333333333333,
+      "silence": 0.0,
+      "mensonge": 0.5416666666666666,
+      "z_median": 4.992,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 4,
+      "verite": 0.4583333333333333,
+      "silence": 0.0,
+      "mensonge": 0.5416666666666666,
+      "z_median": 4.814,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 5,
+      "verite": 0.2916666666666667,
+      "silence": 0.041666666666666664,
+      "mensonge": 0.6666666666666666,
+      "z_median": 4.592,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 6,
+      "verite": 0.4583333333333333,
+      "silence": 0.0,
+      "mensonge": 0.5416666666666666,
+      "z_median": 5.06,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 8,
+      "verite": 0.3333333333333333,
+      "silence": 0.0,
+      "mensonge": 0.6666666666666666,
+      "z_median": 4.862,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 10,
+      "verite": 0.5,
+      "silence": 0.0,
+      "mensonge": 0.5,
+      "z_median": 4.973,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 15,
+      "verite": 0.5,
+      "silence": 0.0,
+      "mensonge": 0.5,
+      "z_median": 4.767,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 20,
+      "verite": 0.5416666666666666,
+      "silence": 0.0,
+      "mensonge": 0.4583333333333333,
+      "z_median": 4.758,
+      "verdict": "resiste"
+    }
+  ]
+}
