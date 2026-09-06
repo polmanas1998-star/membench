@@ -1,24 +1,26 @@
 # -*- coding: utf-8 -*-
-"""L'ABLATION : ce que chaque garde achete, et celui qui n'achete rien.
+"""L'ABLATION : ce que chaque garde achete, et comment j'ai failli le rater.
 
 CE QUE CES TESTS FIGENT (2026-09-06)
 ------------------------------------
-Une affirmation sur ce qu'un composant apporte se mesure en le RETIRANT. Le
-README en portait une, adossee a un seul point de mesure, et l'ablation ne la
-reproduit pas.
+Une affirmation sur ce qu'un composant apporte se mesure en le RETIRANT.
 
-    garde z            hallucination 0.000 -> 1.000 quand on le retire
-    decroissance       valeur perimee resservie 0.000 -> 0.444
-    garde d'age        AUCUN changement, a d = 2048, 4096 et 8192
-    plancher de poids  aucun changement mesurable non plus
+    garde z            hallucination 0.011 -> 1.000 quand on le retire
+    decroissance       valeur perimee resservie 0.000 -> 0.417
+    garde d'age        precision 0.995 -> 0.988, soit les 3 erreurs qu'il vise
+    plancher de poids  aucun effet mesurable sur la justesse
 
-Le garde d'age est redondant parce que son propre seuil en derive : 111,33
-jours vaut 45 x log2(1/0,18), donc le plancher de poids et lui encodent la
-meme frontiere, l'un a la construction de la trace, l'autre a l'interrogation.
+⚠ LA MEDIANE A FAILLI COUTER UN CHIFFRE PUBLIE. La premiere version de ce banc
+resumait les taux par graine avec une mediane. Les 3 erreurs que le garde d'age
+retire vivent dans 2 graines sur 8 : la mediane de [1, 1, 1, 1, 1, 1, .98, .97]
+vaut 1,000. L'ablation a donc conclu que le garde ne servait a rien, une
+affirmation VRAIE du README a ete retiree sur cette base, puis remise quand la
+calibration, qui met les graines en commun, a retrouve les 3 erreurs.
 
-⚠ CES TESTS NE DEMANDENT PAS DE SUPPRIMER LE GARDE D'AGE. Ils figent le fait
-qu'il ne mord pas : le jour ou il se met a mordre, quelque chose a change dans
-la decroissance ou le plancher, et il faut le savoir.
+Une mediane est aveugle par construction a un evenement rare. Un taux d'erreur
+rare se calcule sur le TOTAL des questions, jamais en resumant des taux dont
+chacun a son propre denominateur. C'est pourquoi `_mesure` ci-dessous marque
+une seule fois sur l'union des graines.
 """
 from __future__ import annotations
 
@@ -45,17 +47,16 @@ GRAINES = (1, 2, 3, 4)
 
 
 def _mesure(**kw):
-    """Mediane des metriques sur quelques graines, pour une variante."""
-    import statistics as st
-    acc: dict[str, list] = {}
+    """Taux MIS EN COMMUN sur toutes les graines, jamais une mediane de taux."""
+    faits, reponses = [], []
     for g in GRAINES:
         f = build_corpus(seed=g)
-        r = score(f, run(_Variante(DIM, **kw), f, list(timeline(f))))
-        for k in ("coverage", "gated_precision", "hallucination",
-                  "supersession_error", "deep_retention"):
-            acc.setdefault(k, []).append(getattr(r, k))
-    return {k: st.median([x for x in v if x is not None]) if any(
-        x is not None for x in v) else None for k, v in acc.items()}
+        faits.extend(f)
+        reponses.extend(run(_Variante(DIM, **kw), f, list(timeline(f))))
+    r = score(faits, reponses)
+    return {k: getattr(r, k) for k in
+            ("coverage", "gated_precision", "hallucination",
+             "supersession_error", "deep_retention")}
 
 
 def test_le_garde_z_est_LE_produit():
@@ -66,7 +67,10 @@ def test_le_garde_z_est_LE_produit():
     """
     complet = _mesure()
     sans = _mesure(z_gate=0.0)
-    assert complet["hallucination"] == 0.0
+    # 2 inventions sur les 88 faits absents de ces 4 graines. Le seuil est
+    # pose sur le TAUX et non sur le compte : change le nombre de graines et
+    # le denominateur change, ce qui est precisement la lecon de ce fichier.
+    assert complet["hallucination"] <= 0.05
     assert sans["hallucination"] >= 0.9, (
         f"hallucination {sans['hallucination']:.3f} sans le garde z : elle "
         "devrait etre totale, une autre defense s'est glissee la")
@@ -87,24 +91,48 @@ def test_la_decroissance_est_ce_qui_fait_marcher_la_supersession():
         "decroissance : trop bas, la supersession tient par autre chose")
 
 
-def test_LE_GARDE_D_AGE_NE_MORD_PAS():
-    """Le fait que le README affirmait le contraire.
+def test_LE_GARDE_D_AGE_MORD_et_la_mediane_le_cachait():
+    """Le test qui n'existait pas, et dont l'absence a coute un chiffre publie.
 
-    Le retirer ne change aucune colonne. Son seuil de 111,33 jours derive du
-    plancher de poids (45 x log2(1/0,18)) : les deux encodent la meme
-    frontiere, et le plancher a deja evince avant que le garde ne s'execute.
+    Le garde d'age retire exactement les erreurs qu'il vise : des faits au-dela
+    du seuil d'oubli auxquels la couche repondait avec un z superieur au seuil
+    de confiance. Mesure : 3 erreurs, d'age 159, 192 et 242 jours.
 
-    ⚠ Si ce test rougit, ce n'est PAS une regression : c'est que le garde s'est
-    mis a servir a quelque chose. Il faut alors remesurer et reecrire le README,
-    pas restaurer l'ancien comportement.
+    Elles ne representent que 0,7 point de precision, et elles vivent dans 2
+    graines sur 8. Toute statistique resumee par graine les perd.
     """
     complet = _mesure()
     sans = _mesure(age_gate=False)
-    assert sans["hallucination"] == complet["hallucination"]
-    assert sans["gated_precision"] == complet["gated_precision"]
-    assert abs(sans["coverage"] - complet["coverage"]) < 0.02, (
-        f"couverture {sans['coverage']:.3f} sans garde d'age contre "
-        f"{complet['coverage']:.3f} avec : il s'est mis a mordre")
+    assert sans["gated_precision"] < complet["gated_precision"], (
+        f"precision {sans['gated_precision']:.4f} sans garde d'age contre "
+        f"{complet['gated_precision']:.4f} avec : il a cesse de mordre, ou "
+        "les taux sont a nouveau resumes par graine au lieu d'etre mis en commun")
+    assert complet["gated_precision"] - sans["gated_precision"] < 0.05,         "l'ecart a beaucoup grandi : remesurer, ce n'est plus le meme garde"
+
+
+def test_UNE_MEDIANE_AURAIT_RATE_LE_GARDE_D_AGE():
+    """Le piege lui-meme, fige, pour qu'on ne le retombe pas.
+
+    On calcule les deux facons sur les memes donnees : mise en commun, l'effet
+    se voit ; mediane des taux par graine, il disparait. Ce test echoue le jour
+    ou quelqu'un « simplifie » `_mesure` en remettant une mediane.
+    """
+    import statistics as st
+    par_graine = {"avec": [], "sans": []}
+    for g in GRAINES:
+        f = build_corpus(seed=g)
+        tl = list(timeline(f))
+        par_graine["avec"].append(
+            score(f, run(_Variante(DIM), f, tl)).gated_precision)
+        par_graine["sans"].append(
+            score(f, run(_Variante(DIM, age_gate=False), f, tl)).gated_precision)
+    m_avec = st.median([x for x in par_graine["avec"] if x is not None])
+    m_sans = st.median([x for x in par_graine["sans"] if x is not None])
+    assert m_avec == m_sans, (
+        "la mediane distingue maintenant les deux variantes : l'erreur n'est "
+        "plus assez rare pour se cacher, et cette lecon a perdu son exemple")
+    commun = _mesure()["gated_precision"] - _mesure(age_gate=False)["gated_precision"]
+    assert commun > 0, "et pourtant l'effet existe quand on met les graines en commun"
 
 
 def test_la_retention_profonde_est_un_ARBITRAGE_et_voici_son_prix():
@@ -130,7 +158,7 @@ def test_une_variante_complete_reproduit_le_banc_publie():
     de differences qui ne diraient rien.
     """
     c = _mesure()
-    assert c["gated_precision"] == 1.0
-    assert c["hallucination"] == 0.0
+    assert c["gated_precision"] >= 0.98
+    assert c["hallucination"] <= 0.05      # les 2 inventions publiees
     assert c["supersession_error"] == 0.0
     assert 0.4 <= c["coverage"] <= 0.6

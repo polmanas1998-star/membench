@@ -35,7 +35,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import statistics as st
 
 from membench.arms import ScrambledMemory, run
 from membench.corpus import build_corpus, timeline
@@ -54,9 +53,16 @@ MIX30 = {"stable": 5, "faded": 6, "expired": 4,
 SUJETS = (3, 4, 5, 6, 8, 10, 12)
 
 
-def med(xs: list[float | None]) -> float | None:
-    vus = [x for x in xs if x is not None]
-    return st.median(vus) if vus else None
+# ⚠ TAUX MIS EN COMMUN, PAS MEDIANE DES TAUX.
+#
+# La premiere version de ce banc mediane les taux par graine. Une mediane est
+# AVEUGLE a un evenement rare : trois erreurs reparties sur deux graines sur
+# huit disparaissent derriere six graines parfaites. C'est exactement ce qui
+# s'est produit dans `ablation.py`, ou la mediane a fait conclure qu'un garde
+# ne servait a rien alors qu'il retirait toutes les erreurs qu'il visait.
+#
+# Un taux d'erreur rare se calcule sur le total des questions, jamais en
+# resumant des taux dont chacun a son propre denominateur.
 
 
 def main() -> int:
@@ -77,24 +83,23 @@ def main() -> int:
 
     cellules = []
     for n in SUJETS:
-        couv, prec, hal, prec_mel = [], [], [], []
+        faits, rep, rep_mel = [], [], []
         for g in range(1, a.seeds + 1):
             f = build_corpus(seed=g, mix=MIX30, sujets_max=n)
             tl = list(timeline(f))
-            r = score(f, run(DermiozArm(dim=a.dim), f, tl))
-            m = score(f, run(ScrambledMemory(DermiozArm(dim=a.dim), seed=7), f, tl))
-            couv.append(r.coverage)
-            prec.append(r.gated_precision)
-            hal.append(r.hallucination)
-            prec_mel.append(m.gated_precision)
-        c, p, h = med(couv), med(prec), med(prec_mel)
+            faits.extend(f)
+            rep.extend(run(DermiozArm(dim=a.dim), f, tl))
+            rep_mel.extend(run(ScrambledMemory(DermiozArm(dim=a.dim), seed=7), f, tl))
+        r, m = score(faits, rep), score(faits, rep_mel)
+        c, p, h = r.coverage, r.gated_precision, m.gated_precision
+        hal = [r.hallucination]
         ecart = None if (p is None or h is None) else p - h
         g_ = lambda v: "  n/m" if v is None else f"{v:.3f}"
         print(f"{n:>7}{total / n:>11.1f}{g_(c):>8}{g_(p):>8}"
-              f"{g_(med(hal)):>9}{g_(h):>10}{g_(ecart):>8}")
+              f"{g_(hal[0]):>9}{g_(h):>10}{g_(ecart):>8}")
         cellules.append({"sujets": n, "relations_par_sujet": round(total / n, 1),
                          "couverture": c, "precision_gardee": p,
-                         "hallucination": med(hal), "precision_melangee": h,
+                         "hallucination": hal[0], "precision_melangee": h,
                          "ecart_au_temoin": ecart})
 
     with open(a.out, "w", encoding="utf-8") as fh:

@@ -34,7 +34,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import statistics as st
 
 from membench.arms import run
 from membench.corpus import build_corpus, timeline
@@ -93,9 +92,18 @@ VARIANTES = [
 ]
 
 
-def med(xs):
-    vus = [x for x in xs if x is not None]
-    return st.median(vus) if vus else None
+# ⚠ ON MET LES GRAINES EN COMMUN, ON NE PREND PAS LA MEDIANE.
+#
+# La premiere version de ce banc prenait la mediane des taux par graine, et
+# elle a rate le seul effet qu'elle cherchait. Les 3 erreurs que le garde d'age
+# retire vivent dans 2 graines sur 8 : la mediane de
+# [1, 1, 1, 1, 1, 1, 0,98, 0,97] vaut 1,000. Elle est AVEUGLE par construction
+# a un evenement rare, et l'ablation a conclu que le garde ne servait a rien.
+# Un chiffre publie a ete retire sur cette erreur, puis remis.
+#
+# Un taux d'erreur rare se calcule sur le TOTAL, jamais en moyennant des taux
+# par lot : chaque lot a son propre denominateur, et resumer des taux revient a
+# donner le meme poids a un lot sans erreur qu'a un lot qui en porte trois.
 
 
 def main() -> int:
@@ -114,15 +122,17 @@ def main() -> int:
     print(hdr); print("-" * len(hdr))
 
     for nom, retire, fab in VARIANTES:
-        m = {k: [] for k in ("coverage", "gated_precision", "hallucination",
-                             "supersession_error", "deep_retention",
-                             "age_awareness")}
+        # Une memoire NEUVE par graine, mais un seul calcul de score sur
+        # l'union : c'est ce qui donne des taux mis en commun plutot qu'une
+        # moyenne de taux.
+        tous_faits, toutes_reponses = [], []
         for f in corpus:
-            tl = list(timeline(f))
-            r = score(f, run(fab(a.dim), f, tl))
-            for k in m:
-                m[k].append(getattr(r, k))
-        v = {k: med(x) for k, x in m.items()}
+            tous_faits.extend(f)
+            toutes_reponses.extend(run(fab(a.dim), f, list(timeline(f))))
+        r = score(tous_faits, toutes_reponses)
+        v = {k: getattr(r, k) for k in
+             ("coverage", "gated_precision", "hallucination",
+              "supersession_error", "deep_retention", "age_awareness")}
         g = lambda x: "  n/m" if x is None else f"{x:.3f}"
         print(f"{nom:<20}{g(v['coverage']):>7}{g(v['gated_precision']):>7}"
               f"{g(v['hallucination']):>8}{g(v['supersession_error']):>8}"

@@ -44,7 +44,16 @@ who solved it.
 
 ## Results, 832 questions over 8 seeds
 
-Medians. `d = 2048`. Lower is better on `stale err` and `halluc`.
+Medians across seeds. `d = 2048`. Lower is better on `stale err` and `halluc`.
+
+> **A median hides a rare error, and this table does.** It reports the memory
+> layer at `gated precision 1.000`, while the error table further down reports 2
+> hallucinations out of 176 absent facts. Both come from the same 832 questions
+> and they cannot both be true: an answer on a fact never stated is answered and
+> not correct, so it lowers precision. The median reads 1.000 because those 2
+> errors live in a minority of seeds. **Pooled over all 8 seeds, precision is
+> `0.995`.** A median describes a typical seed; only a pooled rate describes the
+> system.
 
 | arm | cover | gated P | retain | stale err | age | deep ret | halluc |
 |---|---|---|---|---|---|---|---|
@@ -168,16 +177,20 @@ Fact count held **constant** at 30, same mix, same trace length. Only the
 structure changes: the same facts concentrated onto fewer and fewer subjects.
 Medians over 8 seeds.
 
-| relations per subject | d = 128 | d = 256 | d = 2048 |
-|---|---|---|---|
-| | cover / precision | cover / precision | cover / precision |
-| 10.0 (3 subjects) | 0.250 / **1.000** | 0.400 / **1.000** | 0.633 / **1.000** |
-| 6.0 (5 subjects) | 0.200 / **1.000** | 0.317 / **1.000** | 0.650 / **1.000** |
-| 3.8 (8 subjects) | 0.250 / **1.000** | 0.367 / **1.000** | 0.667 / **1.000** |
-| 2.5 (12 subjects) | 0.217 / **1.000** | 0.367 / **1.000** | 0.650 / **1.000** |
+Rates pooled over 8 seeds, not median.
 
-Hallucination is `0.000` in every cell. The gap to the scrambled twin never
-falls below `+0.857`.
+| relations per subject | d = 128 | d = 2048 |
+|---|---|---|
+| | cover / precision | cover / precision |
+| 10.0 (3 subjects) | 0.237 / **1.000** | 0.642 / **1.000** |
+| 6.0 (5 subjects) | 0.204 / 0.980 | 0.650 / **1.000** |
+| 3.8 (8 subjects) | 0.263 / 0.984 | 0.646 / 0.994 |
+| 2.5 (12 subjects) | 0.233 / **1.000** | 0.654 / 0.994 |
+
+Precision stays between `0.980` and `1.000` throughout, with no trend against
+concentration, and the gap to the scrambled twin never falls below `+0.858`.
+The residual errors are the same absent-fact hallucinations found everywhere
+else, not a product of interference.
 
 **A flat result accuses the instrument first**, so the sweep was repeated at
 `d = 128`, where the memory is genuinely stressed: coverage drops from 0.65 to
@@ -219,64 +232,112 @@ class outright cost no correct answer and removed three of five errors.
 > memory is, the other whether it has any right to exist. A system with only the
 > first is confident about its own decay products.
 
-⚠ That sentence is still true as a principle and false as a description of this
-code: the ablation table below shows the age gate changing nothing at any
-dimension measured, because the weight floor already enforces the same
-boundary. The distinction is real; this implementation does not need two
-mechanisms to express it.
+That sentence was briefly withdrawn and is restored. The ablation table below
+confirms it in numbers: removing the age gate costs 0.7 points of precision, the
+3 errors it exists to catch. The withdrawal came from taking a median across
+seeds, which cannot see an error that occurs in two seeds out of eight.
 
 ## Ablation: what each guard actually buys
 
 Four pieces, removed one at a time. `d = 2048`, 8 seeds, 832 questions per row,
-entirely offline.
+**rates pooled over all seeds**, entirely offline.
 
 | variant | removed | cover | precision | halluc | stale | deep ret |
 |---|---|---|---|---|---|---|
-| **complete** | nothing | 0.500 | **1.000** | 0.000 | 0.000 | 0.000 |
-| no z gate | the confidence threshold | 0.865 | 0.722 | **1.000** | 0.000 | 0.000 |
-| no age gate | refusal past 111 days | 0.500 | 1.000 | 0.000 | 0.000 | 0.000 |
-| no decay | the 45 day half-life | 0.625 | 0.880 | 0.000 | **0.444** | 0.000 |
-| no weight floor | eviction below 0.18 | 0.500 | 1.000 | 0.000 | 0.000 | 0.000 |
-| eternal memory | decay **and** age gate | 0.760 | 0.901 | 0.000 | 0.444 | **1.000** |
+| **complete** | nothing | 0.496 | **0.995** | 0.011 | 0.000 | 0.000 |
+| no z gate | the confidence threshold | 0.865 | 0.726 | **1.000** | 0.000 | 0.000 |
+| no age gate | refusal past 111 days | 0.500 | **0.988** | 0.011 | 0.000 | 0.000 |
+| no decay | the 45 day half-life | 0.620 | 0.880 | 0.011 | **0.417** | 0.000 |
+| no weight floor | eviction below 0.18 | 0.499 | 0.995 | 0.011 | 0.000 | 0.000 |
+| eternal memory | decay **and** age gate | 0.754 | 0.901 | 0.011 | 0.417 | **0.991** |
 
-**The z gate is the product.** Remove it and hallucination on facts never
-stated goes from `0.000` to `1.000`: it invents on every single one. Everything
-else in this repository is a refinement; this one line is the thing being sold.
+**The z gate is the product.** Remove it and hallucination on facts never stated
+goes from `0.011` to `1.000`: it invents on every single one. Everything else in
+this repository is a refinement; that one line is the thing being sold.
 
 **Decay is what makes supersession work.** Remove it and a replaced value comes
-back as current `0.444` of the time. The old and the new statement then compete
+back as current `0.417` of the time. The old and the new statement then compete
 forever on equal weight, and the more often the old one was said, the better it
 does.
 
+**The age gate earns 0.7 points of precision**, `0.988` to `0.995`. Exactly the
+3 errors it targets: facts at 159, 192 and 242 days that the memory answered
+with a z above the confidence threshold. Small, real, and it took a second
+instrument to see it.
+
+**The weight floor changes nothing measurable here.** It is a noise and cost
+optimisation, not a correctness one, and this table says so rather than letting
+a reader assume otherwise.
+
 **Deep retention is a choice, and here is its price.** The last row turns
 forgetting off entirely: every fact past the threshold becomes recoverable,
-`deep_retention` goes to `1.000`. It costs `0.444` stale values and ten points
-of precision. That is the trade this design makes, stated as a number rather
-than as a preference.
+`deep_retention` from `0.000` to `0.991`. It costs `0.417` stale values and nine
+points of precision. That is the trade this design makes, stated as a number
+rather than as a preference.
 
-### The age gate does not earn its place
+### The median nearly cost a published claim
 
-Removing it changes nothing. Not coverage, not precision, not hallucination,
-not stale rate. Repeated at `d = 4096` and `d = 8192`, 8 seeds each: still
-nothing.
+The first version of this table took the **median** of per-seed rates. The 3
+errors the age gate removes live in 2 seeds out of 8, so the median of
+`[1, 1, 1, 1, 1, 1, 0.98, 0.97]` is `1.000`. The table showed the age gate
+changing nothing at `d = 2048`, `4096` and `8192`, and on that basis a **true**
+statement in this README was withdrawn and the guard documented as dead weight.
 
-The reason is in its own constant. The forgetting threshold of 111.33 days is
-`45 × log₂(1/0.18)`, that is, **derived from the weight floor**. The floor
-evicts a decayed fact when the trace is built; the age gate refuses it again at
-query time. They encode one boundary twice, and by the time the second runs the
-first has already cleared the room.
+The calibration bench, which pools every seed, found the 3 errors sitting above
+the threshold and sent the claim back.
 
-An earlier note in this file credited the age gate with removing 3 of 5 errors.
-That measurement does not reproduce here, and this file cannot say why from
-where it stands: either something else changed since, or it was taken on a
-configuration this table does not cover. The claim is withdrawn rather than
-explained away.
-
-The guard is kept, because it costs nothing and it states an intent the floor
-only implies. But it is documented for what it is: redundant at every operating
-point measured so far, not load-bearing.
+A median is blind by construction to a rare event. A rare error rate is computed
+over the **total** number of questions, never by summarising rates whose
+denominators differ: that gives a seed with no errors the same weight as a seed
+carrying three. Both this table and `interference.py` were rewritten to pool,
+and a test now fails if anyone summarises by seed again.
 
 Reproduce with `python ablation.py --seeds 8 --dim 2048`.
+
+## Is the confidence score meaningful?
+
+`gate_sweep.py` answers *where to cut*. This answers a harder question: **among
+the answers it does give, does the score separate the right ones from the
+wrong?** A threshold can work perfectly while the score above it carries no
+information at all.
+
+Gate disconnected, `z_gate = 0`, so every answer the layer would produce is
+observed, including those it normally refuses. 832 answers, 8 seeds.
+
+| z band | n | share correct |
+|---|---|---|
+| [1, 2) | 82 | 0.024 |
+| [2, 3) | 228 | 0.211 |
+| [3, 4) | 106 | 0.632 |
+| [4, 5) | 61 | 0.918 |
+| [5, 6) | 51 | **1.000** |
+| [6, 8) | 89 | **1.000** |
+| [8, inf) | 215 | **1.000** |
+
+Strictly monotone. **Concordance 0.956**: draw one correct and one wrong answer
+at random and the correct one carries the higher z 95.6 % of the time. That is
+an AUROC, so it depends on no threshold and no choice of bands. Median z is
+`6.89` on correct answers, `2.25` on wrong ones.
+
+Above the cut at `z = 4` there are exactly 5 errors in 416 answers: **3 expired
+facts and 2 never stated**. The age gate removes the first three. The last two
+are the 2 hallucinations in the error table, and nothing in this design catches
+them, because a fact that was never stated has no age to check.
+
+### The three uncomfortable results are one result
+
+Read with the scrambled control and the poisoning bench, this says something
+precise. **The score measures how cleanly one candidate dominates the trace.**
+On an honest trace, dominance and truth coincide almost perfectly, which is the
+0.956 above. On a scrambled trace, dominance survives and truth does not. Under
+a repetition attack, dominance is purchasable, and the score rises as the lie is
+repeated.
+
+The gate is not weak mathematics. It is a correct measurement of the wrong thing
+whenever the trace stops being trustworthy, and its validity is inherited
+entirely from control over who may write to it.
+
+Reproduce with `python calibration.py --seeds 8`.
 
 ## The gate is a dial, not a number
 
@@ -376,6 +437,7 @@ after the last one ends.
 | `interference.py` | precision against subject concentration |
 | `poisoning.py` | how many repetitions of a lie beat the truth |
 | `ablation.py` | what each guard buys, measured by removing it |
+| `calibration.py` | whether the confidence score separates right from wrong |
 | `gate_sweep.py` | the precision/coverage curve |
 | `error_analysis.py` | outcome by question class |
 | `bootstrap_report.py` | differences with intervals |

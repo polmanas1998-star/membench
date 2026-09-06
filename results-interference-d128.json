@@ -14,11 +14,11 @@
     {
       "sujets": 3,
       "relations_par_sujet": 10.0,
-      "couverture": 0.25,
+      "couverture": 0.2375,
       "precision_gardee": 1.0,
       "hallucination": 0.0,
-      "precision_melangee": 0.05,
-      "ecart_au_temoin": 0.95
+      "precision_melangee": 0.06451612903225806,
+      "ecart_au_temoin": 0.935483870967742
     },
     {
       "sujets": 4,
@@ -26,53 +26,53 @@
       "couverture": 0.25,
       "precision_gardee": 1.0,
       "hallucination": 0.0,
-      "precision_melangee": 0.0,
-      "ecart_au_temoin": 1.0
+      "precision_melangee": 0.04918032786885246,
+      "ecart_au_temoin": 0.9508196721311475
     },
     {
       "sujets": 5,
       "relations_par_sujet": 6.0,
-      "couverture": 0.2,
-      "precision_gardee": 1.0,
-      "hallucination": 0.0,
-      "precision_melangee": 0.14285714285714285,
-      "ecart_au_temoin": 0.8571428571428572
+      "couverture": 0.20416666666666666,
+      "precision_gardee": 0.9795918367346939,
+      "hallucination": 0.020833333333333332,
+      "precision_melangee": 0.12121212121212122,
+      "ecart_au_temoin": 0.8583797155225726
     },
     {
       "sujets": 6,
       "relations_par_sujet": 5.0,
-      "couverture": 0.23333333333333334,
+      "couverture": 0.2375,
       "precision_gardee": 1.0,
       "hallucination": 0.0,
-      "precision_melangee": 0.0,
-      "ecart_au_temoin": 1.0
+      "precision_melangee": 0.05172413793103448,
+      "ecart_au_temoin": 0.9482758620689655
     },
     {
       "sujets": 8,
       "relations_par_sujet": 3.8,
-      "couverture": 0.25,
-      "precision_gardee": 1.0,
-      "hallucination": 0.0,
-      "precision_melangee": 0.05,
-      "ecart_au_temoin": 0.95
+      "couverture": 0.2625,
+      "precision_gardee": 0.9841269841269841,
+      "hallucination": 0.020833333333333332,
+      "precision_melangee": 0.06153846153846154,
+      "ecart_au_temoin": 0.9225885225885225
     },
     {
       "sujets": 10,
       "relations_par_sujet": 3.0,
-      "couverture": 0.26666666666666666,
+      "couverture": 0.2625,
       "precision_gardee": 1.0,
       "hallucination": 0.0,
-      "precision_melangee": 0.0,
-      "ecart_au_temoin": 1.0
+      "precision_melangee": 0.03125,
+      "ecart_au_temoin": 0.96875
     },
     {
       "sujets": 12,
       "relations_par_sujet": 2.5,
-      "couverture": 0.21666666666666667,
+      "couverture": 0.23333333333333334,
       "precision_gardee": 1.0,
       "hallucination": 0.0,
-      "precision_melangee": 0.0,
-      "ecart_au_temoin": 1.0
+      "precision_melangee": 0.06060606060606061,
+      "ecart_au_temoin": 0.9393939393939394
     }
   ]
 }

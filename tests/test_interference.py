@@ -141,3 +141,26 @@ def test_sujets_max_zero_ou_negatif_est_REFUSE(mauvais):
     """
     with pytest.raises(ValueError, match="au moins un"):
         build_corpus(seed=1, sujets_max=mauvais)
+
+
+def test_les_taux_sont_MIS_EN_COMMUN_et_pas_medianes():
+    """Le garde contre l'erreur qui a coute un chiffre publie le 06/09.
+
+    `interference.py` medianait les taux par graine. Une mediane est aveugle
+    par construction a un evenement rare : trois erreurs sur deux graines sur
+    huit disparaissent derriere six graines parfaites. Dans `ablation.py`, la
+    meme faute a fait conclure qu'un garde ne servait a rien, et une
+    affirmation VRAIE du README a ete retiree sur cette base.
+
+    On epingle donc l'ABSENCE de resume par graine dans le source. C'est un
+    test sur le texte, ce qui est faible en general, et c'est ici le seul moyen
+    d'attraper une regression qui ne change aucune valeur de sortie mais rend
+    toutes les valeurs fausses.
+    """
+    src = (RACINE / "interference.py").read_text(encoding="utf-8")
+    corps = src[src.index("def main("):]
+    assert "median" not in corps, (
+        "une mediane est revenue dans interference.py : elle cache les erreurs "
+        "rares, calculer le taux sur le total des questions")
+    assert "score(faits, rep)" in corps, \
+        "le score n'est plus calcule sur l'union des graines"

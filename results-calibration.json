@@ -1,0 +1,58 @@
+{
+  "dim": 2048,
+  "graines": 8,
+  "n_reponses": 832,
+  "concordance": 0.9558475378787878,
+  "monotone": true,
+  "tranches": [
+    {
+      "de": 1.0,
+      "a": 2.0,
+      "n": 82,
+      "part_justes": 0.0244,
+      "part_sans_bonne_reponse": 0.9512
+    },
+    {
+      "de": 2.0,
+      "a": 3.0,
+      "n": 228,
+      "part_justes": 0.2105,
+      "part_sans_bonne_reponse": 0.7368
+    },
+    {
+      "de": 3.0,
+      "a": 4.0,
+      "n": 106,
+      "part_justes": 0.6321,
+      "part_sans_bonne_reponse": 0.3491
+    },
+    {
+      "de": 4.0,
+      "a": 5.0,
+      "n": 61,
+      "part_justes": 0.918,
+      "part_sans_bonne_reponse": 0.082
+    },
+    {
+      "de": 5.0,
+      "a": 6.0,
+      "n": 51,
+      "part_justes": 1.0,
+      "part_sans_bonne_reponse": 0.0
+    },
+    {
+      "de": 6.0,
+      "a": 8.0,
+      "n": 89,
+      "part_justes": 1.0,
+      "part_sans_bonne_reponse": 0.0
+    },
+    {
+      "de": 8.0,
+      "a": null,
+      "n": 215,
+      "part_justes": 1.0,
+      "part_sans_bonne_reponse": 0.0
+    }
+  ]
+}

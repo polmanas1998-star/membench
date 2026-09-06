@@ -5,9 +5,9 @@
     {
       "variante": "complete",
       "retire": "rien",
-      "coverage": 0.5,
-      "gated_precision": 1.0,
-      "hallucination": 0.0,
+      "coverage": 0.4963942307692308,
+      "gated_precision": 0.9951573849878934,
+      "hallucination": 0.011363636363636364,
       "supersession_error": 0.0,
       "deep_retention": 0.0,
       "age_awareness": 1.0
@@ -16,7 +16,7 @@
       "variante": "sans garde z",
       "retire": "le seuil de confiance",
       "coverage": 0.8653846153846154,
-      "gated_precision": 0.7222222222222222,
+      "gated_precision": 0.7263888888888889,
       "hallucination": 1.0,
       "supersession_error": 0.0,
       "deep_retention": 0.0,
@@ -26,8 +26,8 @@
       "variante": "sans garde d'age",
       "retire": "le refus au-dela de 111 jours",
       "coverage": 0.5,
-      "gated_precision": 1.0,
-      "hallucination": 0.0,
+      "gated_precision": 0.9879807692307693,
+      "hallucination": 0.011363636363636364,
       "supersession_error": 0.0,
       "deep_retention": 0.0,
       "age_awareness": 1.0
@@ -35,19 +35,19 @@
     {
       "variante": "sans decroissance",
       "retire": "la demi-vie de 45 jours",
-      "coverage": 0.625,
-      "gated_precision": 0.879692446856626,
-      "hallucination": 0.0,
-      "supersession_error": 0.4444444444444444,
+      "coverage": 0.6201923076923077,
+      "gated_precision": 0.8798449612403101,
+      "hallucination": 0.011363636363636364,
+      "supersession_error": 0.4166666666666667,
       "deep_retention": 0.0,
       "age_awareness": 1.0
     },
     {
       "variante": "sans plancher",
       "retire": "l'eviction sous 0,18",
-      "coverage": 0.5,
-      "gated_precision": 1.0,
-      "hallucination": 0.0,
+      "coverage": 0.4987980769230769,
+      "gated_precision": 0.9951807228915662,
+      "hallucination": 0.011363636363636364,
       "supersession_error": 0.0,
       "deep_retention": 0.0,
       "age_awareness": 1.0
@@ -55,11 +55,11 @@
     {
       "variante": "memoire eternelle",
       "retire": "decroissance ET garde d'age",
-      "coverage": 0.7596153846153846,
-      "gated_precision": 0.9006172839506172,
-      "hallucination": 0.0,
-      "supersession_error": 0.4444444444444444,
-      "deep_retention": 1.0,
+      "coverage": 0.7536057692307693,
+      "gated_precision": 0.9011164274322169,
+      "hallucination": 0.011363636363636364,
+      "supersession_error": 0.4166666666666667,
+      "deep_retention": 0.9910714285714286,
       "age_awareness": 1.0
     }
   ]
