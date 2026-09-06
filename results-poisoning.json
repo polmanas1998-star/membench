@@ -1,0 +1,186 @@
+{
+  "dim": 2048,
+  "graines": 12,
+  "points": [
+    {
+      "verites": 1,
+      "mensonges": 1,
+      "verite": 0.5,
+      "silence": 0.0,
+      "mensonge": 0.5,
+      "z_median": 4.453,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 2,
+      "verite": 0.08333333333333333,
+      "silence": 0.08333333333333333,
+      "mensonge": 0.8333333333333334,
+      "z_median": 5.035,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 3,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.111,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 4,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.423,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 5,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.135,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 6,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.13,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 8,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.371,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 10,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.758,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 15,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.238,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 1,
+      "mensonges": 20,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.537,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 1,
+      "verite": 1.0,
+      "silence": 0.0,
+      "mensonge": 0.0,
+      "z_median": 6.281,
+      "verdict": "resiste"
+    },
+    {
+      "verites": 3,
+      "mensonges": 2,
+      "verite": 1.0,
+      "silence": 0.0,
+      "mensonge": 0.0,
+      "z_median": 5.661,
+      "verdict": "resiste"
+    },
+    {
+      "verites": 3,
+      "mensonges": 3,
+      "verite": 0.6666666666666666,
+      "silence": 0.0,
+      "mensonge": 0.3333333333333333,
+      "z_median": 5.061,
+      "verdict": "resiste"
+    },
+    {
+      "verites": 3,
+      "mensonges": 4,
+      "verite": 0.4166666666666667,
+      "silence": 0.0,
+      "mensonge": 0.5833333333333334,
+      "z_median": 4.814,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 5,
+      "verite": 0.5833333333333334,
+      "silence": 0.08333333333333333,
+      "mensonge": 0.3333333333333333,
+      "z_median": 4.536,
+      "verdict": "resiste"
+    },
+    {
+      "verites": 3,
+      "mensonges": 6,
+      "verite": 0.5833333333333334,
+      "silence": 0.0,
+      "mensonge": 0.4166666666666667,
+      "z_median": 5.119,
+      "verdict": "resiste"
+    },
+    {
+      "verites": 3,
+      "mensonges": 8,
+      "verite": 0.4166666666666667,
+      "silence": 0.0,
+      "mensonge": 0.5833333333333334,
+      "z_median": 4.71,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 10,
+      "verite": 0.5,
+      "silence": 0.0,
+      "mensonge": 0.5,
+      "z_median": 5.126,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 15,
+      "verite": 0.5,
+      "silence": 0.0,
+      "mensonge": 0.5,
+      "z_median": 4.767,
+      "verdict": "SERVI AVEC APLOMB"
+    },
+    {
+      "verites": 3,
+      "mensonges": 20,
+      "verite": 0.4166666666666667,
+      "silence": 0.0,
+      "mensonge": 0.5833333333333334,
+      "z_median": 4.869,
+      "verdict": "SERVI AVEC APLOMB"
+    }
+  ]
+}

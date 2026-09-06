@@ -65,6 +65,49 @@ The last band touches zero: the shortfall against a perfect oracle is not
 distinguishable from sampling noise at this size. That is not the same as being
 perfect.
 
+### Two repetitions of a lie beat one statement of truth
+
+The trace is a **sum** of `bind(S, R, O)`. Nothing in that addition separates a
+fact said once from a fact said twenty times, or a true one from a false one.
+So the question an industrial buyer asks first is not whether poisoning is
+possible, but from how many repetitions, and whether it shows.
+
+Threat model, stated: the attacker writes to the memory on the same terms as
+the legitimate source. 12 attacked pairs per point, `d = 2048`, 60 background
+facts so the attacker is not fighting an empty store.
+
+| lies told | truth returned | silence | **lie returned** | median z |
+|---|---|---|---|---|
+| 1 | 0.50 | 0.00 | 0.50 | 4.45 |
+| 2 | 0.08 | 0.08 | **0.83** | 5.04 |
+| 3 | 0.00 | 0.00 | **1.00** | 6.11 |
+| 8 | 0.00 | 0.00 | **1.00** | 6.37 |
+| 20 | 0.00 | 0.00 | **1.00** | 6.54 |
+
+Two things, and the second is worse than the first.
+
+**Silence is `0.00` almost everywhere.** A layer that went quiet under attack
+would be defensible: it would degrade cleanly. It does not go quiet. It
+asserts.
+
+**The confidence score rises with the attack.** From `4.45` at one repetition to
+`6.54` at twenty. The gate does not merely miss the poisoning, it **rewards**
+it: repetition makes the lie sharp, and sharpness is exactly what the gate
+scores. A guard that measures how clearly a memory stands out will measure a
+forgery just as clearly.
+
+Repeating the truth helps a little and not for long. Stated three times, it
+survives one and two lies; past that it is a weighted vote and whoever repeats
+more wins.
+
+**This is not an implementation bug.** A superposition carries no provenance, so
+a legitimately reinforced fact and a repetition attack are structurally the same
+event. The fix does not live in this layer. It lives in what is allowed to write
+to it. Said plainly: this memory must never be writable by an untrusted party,
+and no amount of tuning the gate changes that.
+
+Reproduce with `python poisoning.py --seeds 12`.
+
 ### The uncomfortable result
 
 The scrambled control keeps coverage at 0.524, slightly **above** the honest
@@ -272,6 +315,7 @@ after the last one ends.
 | `membench/providers.py` | one provider, and the ceilings it enforces |
 | `sweep.py` | the offline table, multi-seed |
 | `interference.py` | precision against subject concentration |
+| `poisoning.py` | how many repetitions of a lie beat the truth |
 | `gate_sweep.py` | the precision/coverage curve |
 | `error_analysis.py` | outcome by question class |
 | `bootstrap_report.py` | differences with intervals |
