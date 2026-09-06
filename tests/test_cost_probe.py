@@ -218,3 +218,94 @@ def test_registre_absent_ou_illisible_rend_none_sans_lever():
             chemin = f"{d}/abime.json"
             _io.open(chemin, "w", encoding="utf-8").write(contenu)
             assert cp.derniere_depense(chemin) is None, contenu
+
+
+def test_la_duree_vient_du_CHRONOMETRE_pas_du_plafond_suppose():
+    """La duree se derivait de `reservation / 8000 jetons par minute` et
+    sortait 34 minutes. La campagne du 06/09 a soutenu 20 600 jetons de
+    reservation par minute : le plafond du compte de PRODUCTION ne decrit pas
+    le compte d'OUTILLAGE, et la duree etait fausse d'un facteur 2,6.
+
+    Ce test epingle la source : les secondes chronometrees, jamais le plafond.
+    """
+    from membench.scoring import TPM_CEILING
+    d = cp.devis(40)
+    attendu = sum(cp.SECONDES_PAR_QUESTION[k] * 40
+                  for k in cp.COUT_PAR_QUESTION) / 60
+    assert d["minutes_estimees"] == attendu
+    assert d["minutes_estimees"] != d["reservation"] / TPM_CEILING
+    assert cp.devis(80)["minutes_estimees"] == 2 * d["minutes_estimees"]
+
+
+def test_les_vitesses_chronometrees_collent_a_la_campagne_mesuree():
+    """Elles doivent se relire dans `results-cost-seed1.json`, sinon ce sont
+    des nombres inventes qui ressemblent a des mesures."""
+    import json
+    with open("results-cost-seed1.json", encoding="utf-8") as fh:
+        mesure = json.load(fh)
+    for bras in ("D+", "C", "A"):
+        r = mesure[f"seed1/{bras}"]
+        chrono = r["seconds"] / r["asked"]
+        assert abs(cp.SECONDES_PAR_QUESTION[bras] - chrono) < 0.02, bras
+    # B n'a jamais tourne : sa valeur est une EXTRAPOLATION, pas une mesure,
+    # et elle doit rester coherente avec le cout par jeton de C et A.
+    par_jeton = [mesure[f"seed1/{b}"]["seconds"] / mesure[f"seed1/{b}"]["asked"]
+                 / cp.COUT_PAR_QUESTION[b] for b in ("C", "A")]
+    attendu = cp.COUT_PAR_QUESTION["B"] * sum(par_jeton) / len(par_jeton)
+    assert abs(cp.SECONDES_PAR_QUESTION["B"] - attendu) < 0.5
+
+
+def test_le_cout_de_B_se_derive_du_prompt_et_non_du_neant():
+    """Le bras B n'a JAMAIS termine une question, et son cout est pourtant le
+    chiffre qui porte la conclusion publiee (il ne tient pas dans une journee).
+
+    Un nombre sans source dans un README public est une dette : celui-ci valait
+    3 483 et personne, moi compris, ne pouvait dire d'ou il venait. Il est
+    maintenant DERIVE, et ce test refait la derivation entierement :
+
+      * on construit le prompt de chaque bras par le chemin de code de la
+        campagne, jamais une copie a la main ;
+      * on calibre le rapport caracteres/jeton sur A et C, dont le fournisseur
+        a RAPPORTE les jetons de prompt ;
+      * on applique ce rapport a B et on compare a la constante.
+
+    Si le prompt de B change, ce test rougit, ce qui est exactement ce qu'on
+    veut d'un chiffre qu'aucune campagne ne peut verifier pour l'instant.
+    """
+    import json
+    from membench.corpus import build_corpus, candidates, timeline
+    from membench.real_arms import (PROMPTS, FullContextArm, RetrievalArm,
+                                    StatelessArm, _ModelArm, _question)
+
+    f = build_corpus(seed=1)
+    tl, pool = list(timeline(f)), candidates(f)
+    q = f[0]
+
+    def prompt_complet(cls):
+        a = cls(None, pool)
+        a.observe(tl)
+        ctx = a._context(q.subject, q.relation)
+        pose = _question(q.subject, q.relation, pool)
+        return PROMPTS[a._prompt] + "\n" + (f"{ctx}\n\n{pose}" if ctx else pose)
+
+    with open("results-cost-seed1.json", encoding="utf-8") as fh:
+        mesure = json.load(fh)
+
+    rapports = []
+    for nom, cls in (("A", StatelessArm), ("C", RetrievalArm)):
+        jetons = mesure[f"seed1/{nom}"]["tokens_per_turn"] - _ModelArm.MAX_TOKENS
+        rapports.append(len(prompt_complet(cls)) / jetons)
+    # Deux prompts de longueurs tres differentes doivent donner le MEME
+    # rapport, sinon la conversion ne vaut rien et B n'est pas derivable.
+    assert abs(rapports[0] - rapports[1]) / max(rapports) < 0.10, rapports
+
+    ratio = sum(rapports) / len(rapports)
+    attendu = len(prompt_complet(FullContextArm)) / ratio + _ModelArm.MAX_TOKENS
+    ecart = abs(cp.COUT_PAR_QUESTION["B"] - attendu) / attendu
+    assert ecart < 0.03, (cp.COUT_PAR_QUESTION["B"], attendu, ecart)
+
+
+def test_le_bras_B_ne_tient_toujours_pas_dans_une_journee():
+    """La conclusion publiee, epinglee sur le corpus entier."""
+    besoin = cp.COUT_PAR_QUESTION["B"] * 104 / cp.FACTEUR_REEL
+    assert besoin > cp.TPD, besoin

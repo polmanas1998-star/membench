@@ -27,8 +27,8 @@ mesure :
 
 2. AUCUN DEVIS N'ETAIT FAIT AVANT DE DEPENSER. Le cout par question de chaque
    bras etait connu, le plafond aussi ; personne n'a fait la multiplication.
-   Elle tient en une ligne et elle dit non : 104 questions x 6 831 jetons de
-   reservation = 710 000, soit trois jours et demi de budget. Le devis est
+   Elle tient en une ligne et elle dit non : 104 questions x 7 209 jetons de
+   reservation = 750 000, soit presque quatre jours de budget. Le devis est
    maintenant IMPRIME AVANT le premier appel, et la campagne REFUSE de partir
    quand il ne tient pas.
 
@@ -80,9 +80,22 @@ from membench.scoring import TPM_CEILING, score
 #: dernieres heures, quelques centaines de jetons a l'heure.
 TPD = 200_000
 
-#: Jetons de RESERVATION par question, mesures le 06/09 sur les 104 questions
-#: du corpus (`results-cost-seed1.json`). B vient de la campagne interrompue.
-COUT_PAR_QUESTION = {"B": 3483.0, "D+": 665.5, "A": 1280.1, "C": 1402.9}
+#: Jetons de RESERVATION par question. D+, A et C sont MESURES le 06/09 sur les
+#: 104 questions du corpus (`results-cost-seed1.json`).
+#:
+#: B est DERIVE, et il faut le dire : ce bras n'a jamais termine une seule
+#: question, le plafond quotidien l'a coupe avant son premier appel. J'avais
+#: d'abord publie 3 483 sans pouvoir dire d'ou il sortait. La derivation le met
+#: a 3 861, 11 % plus haut.
+#:
+#: Comment il se derive, sans depenser un jeton : on construit le prompt de B
+#: par le meme chemin de code que la campagne, on le compte en CARACTERES, et
+#: on convertit avec le rapport caracteres/jeton mesure sur les bras qui ont
+#: bel et bien tourne. A donne 2,65, C donne 2,76 ; deux bras, deux longueurs
+#: de prompt tres differentes, et un rapport qui tient a 4 % pres, ce qui est
+#: ce qui rend la conversion utilisable. `test_le_cout_de_B_se_derive_du_
+#: prompt` refait le calcul et rougit si la constante s'en ecarte.
+COUT_PAR_QUESTION = {"B": 3861.0, "D+": 665.5, "A": 1280.1, "C": 1402.9}
 
 #: DEUX COMPTABILITES, et les confondre coute une journee. Le plafond par
 #: MINUTE debite `prompt + max_tokens`, ce que `tokens_total` rapporte ici. Le
@@ -92,6 +105,23 @@ COUT_PAR_QUESTION = {"B": 3483.0, "D+": 665.5, "A": 1280.1, "C": 1402.9}
 RESERVATION_MESUREE = 69_213 + 145_899 + 133_132
 REEL_MESURE = 198_839
 FACTEUR_REEL = RESERVATION_MESUREE / REEL_MESURE
+
+#: Secondes par question, CHRONOMETREES le 06/09 (`run.json`, champ `seconds`
+#: divise par `asked`). Elles ne se derivent PAS du plafond par minute, et
+#: c'est une correction :
+#:
+#: J'ai d'abord calcule la duree comme `reservation / 8000 jetons par minute`,
+#: le plafond du compte de PRODUCTION. Ca donnait 34 minutes. La campagne de ce
+#: soir a soutenu **20 600 jetons de reservation par minute**, 2,6 fois plus,
+#: sans se faire limiter. Le compte d'OUTILLAGE n'a pas le meme plafond que
+#: celui du produit, et une duree calculee sur la mauvaise constante est fausse
+#: d'un facteur qu'aucun test ne rattrape.
+#:
+#: B n'a jamais tourne : sa valeur est EXTRAPOLEE de C et A, qui coutent
+#: 0,0032 s par jeton de reservation. D+ est deux fois plus rapide par jeton
+#: parce qu'il se tait une fois sur deux et n'appelle alors pas le modele, donc
+#: on ne s'en sert pas pour extrapoler.
+SECONDES_PAR_QUESTION = {"D+": 1.18, "C": 4.66, "A": 3.92, "B": 12.3}
 
 #: La fenetre du plafond quotidien GLISSE : ce qui est brule maintenant ne
 #: ressort qu'apres ce delai, et rien ne se recycle a minuit.
@@ -213,6 +243,8 @@ def devis(n: int) -> dict:
     return {"questions": n, "reservation": total,
             "reel_estime": total / FACTEUR_REEL,
             "part_du_jour": total / FACTEUR_REEL / TPD,
+            "minutes_estimees": sum(SECONDES_PAR_QUESTION[k] * n
+                                    for k in COUT_PAR_QUESTION) / 60,
             "par_bras": reservation}
 
 
@@ -248,6 +280,8 @@ def main() -> int:
           f"{d['reel_estime']:>7.0f} reels estimes")
     print(f"  soit {d['part_du_jour']:.0%} du plafond de "
           + f"{TPD:,} jetons/jour".replace(",", " "))
+    print(f"  duree estimee {d['minutes_estimees']:.0f} min, aux vitesses "
+          f"chronometrees le 06/09 (B extrapole)")
     if d["part_du_jour"] > 1.0 and not a.oui:
         tient = int(a.questions / d["part_du_jour"])
         print(f"\nCe devis NE TIENT PAS dans une journee. Rien n'a ete "

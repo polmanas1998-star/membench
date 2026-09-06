@@ -476,6 +476,8 @@ One seed, 104 questions, `openai/gpt-oss-120b`, `d = 2048`.
 | A model alone | 0.000 | n/m | 0.000 | 0.000 | never correct |
 | B full transcript | — | — | — | — | **did not fit in a day** |
 
+Arm B's row is empty because it never ran, not because it was excluded.
+
 The layer answers half as often and is right every time it does. Top-k answers
 more, invents on 9 % of facts never stated, and serves a superseded value 5.6 %
 of the time. Per correct answer it costs **1.38x more**.
@@ -486,9 +488,20 @@ is what makes the task's difficulty visible rather than assumed.
 
 ### The full-transcript arm does not fit inside a day
 
-Not a failure, a measurement. Pasting the whole transcript costs **3 483 tokens
-per question**, so one seed of 104 questions needs about **362 000 tokens**. The
-account's ceiling is **200 000 tokens per day**.
+Not a failure, a measurement. Pasting the whole transcript costs about **3 861
+tokens per question**, so one seed of 104 questions needs roughly **400 000
+tokens**. The account's ceiling is **200 000 tokens per day**.
+
+That per-question figure is **derived, not measured**, and the distinction
+matters because arm B never completed a single question: the ceiling closed
+before its first call. An earlier draft of this section published 3 483 with no
+traceable source. The number now comes from a calculation anyone can redo
+without spending a token: build B's prompt through the same code path the
+campaign uses, count its characters, and convert with the characters-per-token
+ratio taken from the arms the provider did report. A gives 2.65, C gives 2.76,
+on prompts of very different lengths, and the two agree to within 4 %, which is
+what makes the conversion usable at all. `test_le_cout_de_B_se_derive_du_prompt`
+redoes it and fails if the constant drifts.
 
 The campaign hit it, and the log is the clearest statement of the result
 (Paris time; the log itself wrote UTC without saying so, which is its own entry
@@ -527,16 +540,26 @@ start when the quote does not fit:
       genres : absent 9/22, expired 5/14, faded 8/22, reinforced 4/10,
                stable 7/18, superseded 7/18
 
-    B historique complet       139320 jetons reserves
+    B historique complet       154440 jetons reserves
     D+ couche puis modele       26620 jetons reserves
     A modele seul               51204 jetons reserves
     C recherche top-k           56116 jetons reserves
-    TOTAL                      273260 reserves,  156025 reels estimes
-    soit 78% du plafond de 200 000 jetons/jour
+    TOTAL                      288380 reserves,  164658 reels estimes
+    soit 82% du plafond de 200 000 jetons/jour
+    duree estimee 15 min, aux vitesses chronometrees le 06/09 (B extrapole)
 
-The same quote at the full 104 questions reads **203 % of the day**, and the
+The same quote at the full 104 questions reads **214 % of the day**, and the
 command exits without spending anything. That arithmetic is one multiplication;
 nobody did it before the campaign, and it is what a lost day actually costs.
+
+The duration on that last line comes from stopwatch readings, not from the
+per-minute ceiling, and that was itself a correction made while writing this
+section. Computing it as `reservation / 8 000 tokens per minute`, the production
+account's ceiling, gave 34 minutes. The campaign actually sustained **20 600
+reserved tokens per minute**, 2.6x that, without being throttled: the tooling
+account does not carry the product's ceiling, and a duration built on the wrong
+constant is wrong by a factor no test catches. At 40 questions the real quote is
+288 380 reserved, about 165 000 actual, 82 % of the day, roughly 15 minutes.
 
 Two other things changed, and both are ordering rather than measurement:
 
