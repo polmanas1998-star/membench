@@ -113,6 +113,42 @@ not only at the operating point that suits us.
 Raw cells with their ranges: [`results-capacity-surface.json`](results-capacity-surface.json).
 Reproduce with `python grid.py --seeds 20`, about 26 minutes on a laptop.
 
+## Interference costs nothing measurable
+
+A holographic trace is a sum of `bind(S, R, O)`, queried with
+`unbind(trace, bind(S, R))`. When many facts share a subject, the noise the
+others pour into the answer stops being independent: it is correlated by that
+shared subject. This is the worst case for this design, and it is the real one,
+because people talk about themselves, one project, one machine.
+
+Fact count held **constant** at 30, same mix, same trace length. Only the
+structure changes: the same facts concentrated onto fewer and fewer subjects.
+Medians over 8 seeds.
+
+| relations per subject | d = 128 | d = 256 | d = 2048 |
+|---|---|---|---|
+| | cover / precision | cover / precision | cover / precision |
+| 10.0 (3 subjects) | 0.250 / **1.000** | 0.400 / **1.000** | 0.633 / **1.000** |
+| 6.0 (5 subjects) | 0.200 / **1.000** | 0.317 / **1.000** | 0.650 / **1.000** |
+| 3.8 (8 subjects) | 0.250 / **1.000** | 0.367 / **1.000** | 0.667 / **1.000** |
+| 2.5 (12 subjects) | 0.217 / **1.000** | 0.367 / **1.000** | 0.650 / **1.000** |
+
+Hallucination is `0.000` in every cell. The gap to the scrambled twin never
+falls below `+0.857`.
+
+**A flat result accuses the instrument first**, so the sweep was repeated at
+`d = 128`, where the memory is genuinely stressed: coverage drops from 0.65 to
+0.25, which proves the store is near its limit and the gate is working. The
+precision still does not move.
+
+The reading is the same as the capacity surface: **overload makes it silent,
+not wrong**, and correlated noise behaves like any other noise. Below the
+confidence threshold the layer refuses rather than guesses.
+
+Scope, honestly: 30 facts, three dimensions, a 4x range of concentration. A
+wider range needs a larger subject vocabulary, which this corpus does not have.
+Reproduce with `python interference.py --seeds 8 --dim 128`.
+
 ## Where the errors are
 
 Outcome by question class, 8 seeds:
@@ -176,9 +212,14 @@ per seed. It does **not** buy:
 - **natural language** — real users state facts in prose, ambiguously, across
   turns. Every fact here arrives as a clean triple, which flatters both this
   layer and any retriever it is compared to;
-- **realistic fact distributions** — each subject-relation pair is unique by
-  construction, so the hardest real case, one subject carrying many interfering
-  relations, is absent;
+- ~~**realistic fact distributions**~~ — **this limitation was wrong, and is
+  withdrawn.** It claimed that "one subject carrying many interfering relations"
+  was absent. Measured 06/09/2026: the vocabulary holds 12 subjects and 10
+  relations, so 120 pairs, and the default mix consumes 104 of them. The corpus
+  runs at 87 % of pair saturation, with **8.7 relations per subject**.
+  Interference was not absent, it was near maximal, and nobody had counted it.
+  What is genuinely absent is natural interference *structure*: which subjects
+  attract many relations is uniform here, where a real transcript is heavy-tailed;
 - **a second domain** — one practice, one vocabulary of 29 objects;
 - **a second base model** — every model-side number was taken on
   `openai/gpt-oss-120b`;
@@ -230,6 +271,7 @@ after the last one ends.
 | `membench/stats.py` | paired bootstrap on differences |
 | `membench/providers.py` | one provider, and the ceilings it enforces |
 | `sweep.py` | the offline table, multi-seed |
+| `interference.py` | precision against subject concentration |
 | `gate_sweep.py` | the precision/coverage curve |
 | `error_analysis.py` | outcome by question class |
 | `bootstrap_report.py` | differences with intervals |

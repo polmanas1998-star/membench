@@ -169,12 +169,37 @@ def _spread(rng: random.Random, kind: Kind) -> list[int]:
 
 
 def build_corpus(seed: int = 0, mix: dict[Kind, int] | None = None,
-                 as_of: date = AS_OF) -> list[Fact]:
+                 as_of: date = AS_OF, sujets_max: int | None = None) -> list[Fact]:
     """Construit un corpus deterministe.
 
     Chaque paire (sujet, relation) est unique, sinon deux faits se
     contrediraient sans que le corpus le sache, et la verite de reference
     dependrait de l'ordre de lecture.
+
+    `sujets_max` : L'INTERFERENCE, le cas que ce corpus evitait.
+    ---------------------------------------------------------
+    Par defaut, les faits sont etales sur tout le vocabulaire de sujets, donc
+    chaque sujet ne porte qu'une ou deux relations. Le README le disait comme
+    une limite : « le cas reel le plus difficile, un sujet portant plusieurs
+    relations qui interferent, est absent ».
+
+    C'est le pire cas pour une memoire holographique, et pour une raison
+    precise : la trace est une somme de liaisons `bind(S, R, O)`, et on
+    interroge avec `unbind(trace, bind(S, R))`. Quand vingt faits partagent le
+    meme S, le bruit que les dix-neuf autres versent dans la reponse n'est plus
+    independant : il est correle par ce sujet commun. Un corpus qui donne un
+    sujet different a chaque fait mesure donc la memoire dans ses conditions
+    les plus favorables.
+
+    `sujets_max=8` force les faits sur huit sujets seulement. A 104 faits, cela
+    fait treize relations par sujet au lieu d'une. C'est le meme nombre de
+    faits, la meme quantite d'information, la meme longueur de trace : seule
+    la STRUCTURE change.
+
+    ⚠ `None` ne touche RIEN, pas meme le flux du generateur aleatoire. C'est
+    volontaire et verifie par un test : une campagne payante en cours reprend
+    sur les memes graines, et un corpus qui aurait bouge d'un octet rendrait
+    ses points de reprise incomparables entre eux.
     """
     mix = dict(mix or DEFAULT_MIX)
     rng = random.Random(seed)
@@ -195,6 +220,28 @@ def build_corpus(seed: int = 0, mix: dict[Kind, int] | None = None,
         )
     while len(subjects) * len(relations) < needed:
         subjects.append(f"Le chantier n{len(subjects) - len(_SUBJECTS) + 1}")
+
+    if sujets_max is not None:
+        if sujets_max < 1:
+            raise ValueError(f"sujets_max={sujets_max} : il en faut au moins un")
+        if sujets_max > len(subjects):
+            raise ValueError(
+                f"sujets_max={sujets_max} demande plus de sujets que le "
+                f"vocabulaire n'en contient ({len(subjects)}). Ce parametre "
+                "CONCENTRE les faits sur moins de sujets, il n'en invente pas."
+            )
+        if sujets_max * len(relations) < needed:
+            raise ValueError(
+                f"{needed} faits demandes sur {sujets_max} sujets et "
+                f"{len(relations)} relations : au plus "
+                f"{sujets_max * len(relations)} paires possibles. Augmente "
+                "sujets_max, ou reduis le melange."
+            )
+        # On tire les sujets AVANT de restreindre, pour ne pas privilegier le
+        # debut du vocabulaire : les premiers noms de la liste ne doivent pas
+        # devenir « les sujets de l'interference » a chaque graine.
+        subjects = rng.sample(subjects, sujets_max)
+
     pairs = [(s, r) for s in subjects for r in relations]
     rng.shuffle(pairs)
     if needed > len(pairs):

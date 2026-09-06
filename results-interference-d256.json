@@ -1,0 +1,78 @@
+{
+  "faits_par_corpus": 30,
+  "dim": 256,
+  "graines": 8,
+  "melange": {
+    "stable": 5,
+    "faded": 6,
+    "expired": 4,
+    "superseded": 5,
+    "reinforced": 4,
+    "absent": 6
+  },
+  "cellules": [
+    {
+      "sujets": 3,
+      "relations_par_sujet": 10.0,
+      "couverture": 0.4,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.038461538461538464,
+      "ecart_au_temoin": 0.9615384615384616
+    },
+    {
+      "sujets": 4,
+      "relations_par_sujet": 7.5,
+      "couverture": 0.36666666666666664,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.07738095238095238,
+      "ecart_au_temoin": 0.9226190476190477
+    },
+    {
+      "sujets": 5,
+      "relations_par_sujet": 6.0,
+      "couverture": 0.31666666666666665,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.07738095238095238,
+      "ecart_au_temoin": 0.9226190476190477
+    },
+    {
+      "sujets": 6,
+      "relations_par_sujet": 5.0,
+      "couverture": 0.36666666666666664,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.08012820512820512,
+      "ecart_au_temoin": 0.9198717948717949
+    },
+    {
+      "sujets": 8,
+      "relations_par_sujet": 3.8,
+      "couverture": 0.36666666666666664,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.03333333333333333,
+      "ecart_au_temoin": 0.9666666666666667
+    },
+    {
+      "sujets": 10,
+      "relations_par_sujet": 3.0,
+      "couverture": 0.3833333333333333,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.029411764705882353,
+      "ecart_au_temoin": 0.9705882352941176
+    },
+    {
+      "sujets": 12,
+      "relations_par_sujet": 2.5,
+      "couverture": 0.36666666666666664,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.041666666666666664,
+      "ecart_au_temoin": 0.9583333333333334
+    }
+  ]
+}

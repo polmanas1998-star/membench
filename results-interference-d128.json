@@ -1,0 +1,78 @@
+{
+  "faits_par_corpus": 30,
+  "dim": 128,
+  "graines": 8,
+  "melange": {
+    "stable": 5,
+    "faded": 6,
+    "expired": 4,
+    "superseded": 5,
+    "reinforced": 4,
+    "absent": 6
+  },
+  "cellules": [
+    {
+      "sujets": 3,
+      "relations_par_sujet": 10.0,
+      "couverture": 0.25,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.05,
+      "ecart_au_temoin": 0.95
+    },
+    {
+      "sujets": 4,
+      "relations_par_sujet": 7.5,
+      "couverture": 0.25,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.0,
+      "ecart_au_temoin": 1.0
+    },
+    {
+      "sujets": 5,
+      "relations_par_sujet": 6.0,
+      "couverture": 0.2,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.14285714285714285,
+      "ecart_au_temoin": 0.8571428571428572
+    },
+    {
+      "sujets": 6,
+      "relations_par_sujet": 5.0,
+      "couverture": 0.23333333333333334,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.0,
+      "ecart_au_temoin": 1.0
+    },
+    {
+      "sujets": 8,
+      "relations_par_sujet": 3.8,
+      "couverture": 0.25,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.05,
+      "ecart_au_temoin": 0.95
+    },
+    {
+      "sujets": 10,
+      "relations_par_sujet": 3.0,
+      "couverture": 0.26666666666666666,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.0,
+      "ecart_au_temoin": 1.0
+    },
+    {
+      "sujets": 12,
+      "relations_par_sujet": 2.5,
+      "couverture": 0.21666666666666667,
+      "precision_gardee": 1.0,
+      "hallucination": 0.0,
+      "precision_melangee": 0.0,
+      "ecart_au_temoin": 1.0
+    }
+  ]
+}
