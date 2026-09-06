@@ -514,9 +514,43 @@ daily budget with per-minute arithmetic overestimates consumption; reading it
 the other way round underestimates it, which is the mistake made while planning
 this campaign.
 
-Next measurement, sized to fit: all four arms on a stratified 40-question
-subsample, about 264 000 tokens by reservation and roughly 152 000 actual. Same
-questions for every arm, so the comparison stays like for like.
+### The next measurement is sized before it is paid for
+
+`cost_probe.py` now quotes the campaign before the first call, and refuses to
+start when the quote does not fit:
+
+    $ python cost_probe.py --devis
+    40 questions sur 104, echantillon proportionnel, graine 1, d=2048
+      genres : absent 9/22, expired 5/14, faded 8/22, reinforced 4/10,
+               stable 7/18, superseded 7/18
+
+    B historique complet       139320 jetons reserves
+    D+ couche puis modele       26620 jetons reserves
+    A modele seul               51204 jetons reserves
+    C recherche top-k           56116 jetons reserves
+    TOTAL                      273260 reserves,  156025 reels estimes
+    soit 78% du plafond de 200 000 jetons/jour
+
+The same quote at the full 104 questions reads **203 % of the day**, and the
+command exits without spending anything. That arithmetic is one multiplication;
+nobody did it before the campaign, and it is what a lost day actually costs.
+
+Two other things changed, and both are ordering rather than measurement:
+
+**The unknown arm now runs first.** The lost campaign ran D+, C, A, then B. When
+the bucket empties you lose what is still ahead of you, so it lost the only
+number it existed to produce and kept three arms already measured. Arms now run
+B first, then the rest by increasing cost, and each one's result is written to
+disk as soon as it lands.
+
+**The subsample is proportional to the corpus, not balanced across kinds.**
+Equal strata would measure each kind more precisely and make the overall rates
+incomparable with the 104-question run: a corpus that is 21 % absent is not
+summarised by a sample that is 17 % absent. Proportional allocation with
+largest-remainder rounding keeps the sample readable against the full run, which
+turns the three known arms into a **control**: if D+ comes back near its 0.510
+coverage, the sample is representative and B's first measurement inherits that
+credibility. If it does not, the sample is what to read before the arm.
 
 ## Running it on someone else's machine
 
@@ -592,6 +626,7 @@ never quietly turned into a skip.
 | `ablation.py` | what each guard buys, measured by removing it |
 | `calibration.py` | whether the confidence score separates right from wrong |
 | `latency.py` | milliseconds per query, against store size |
+| `cost_probe.py` | tokens per correct answer, on a sample sized to the daily ceiling |
 | `gate_sweep.py` | the precision/coverage curve |
 | `error_analysis.py` | outcome by question class |
 | `bootstrap_report.py` | differences with intervals |
