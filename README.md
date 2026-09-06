@@ -219,6 +219,65 @@ class outright cost no correct answer and removed three of five errors.
 > memory is, the other whether it has any right to exist. A system with only the
 > first is confident about its own decay products.
 
+⚠ That sentence is still true as a principle and false as a description of this
+code: the ablation table below shows the age gate changing nothing at any
+dimension measured, because the weight floor already enforces the same
+boundary. The distinction is real; this implementation does not need two
+mechanisms to express it.
+
+## Ablation: what each guard actually buys
+
+Four pieces, removed one at a time. `d = 2048`, 8 seeds, 832 questions per row,
+entirely offline.
+
+| variant | removed | cover | precision | halluc | stale | deep ret |
+|---|---|---|---|---|---|---|
+| **complete** | nothing | 0.500 | **1.000** | 0.000 | 0.000 | 0.000 |
+| no z gate | the confidence threshold | 0.865 | 0.722 | **1.000** | 0.000 | 0.000 |
+| no age gate | refusal past 111 days | 0.500 | 1.000 | 0.000 | 0.000 | 0.000 |
+| no decay | the 45 day half-life | 0.625 | 0.880 | 0.000 | **0.444** | 0.000 |
+| no weight floor | eviction below 0.18 | 0.500 | 1.000 | 0.000 | 0.000 | 0.000 |
+| eternal memory | decay **and** age gate | 0.760 | 0.901 | 0.000 | 0.444 | **1.000** |
+
+**The z gate is the product.** Remove it and hallucination on facts never
+stated goes from `0.000` to `1.000`: it invents on every single one. Everything
+else in this repository is a refinement; this one line is the thing being sold.
+
+**Decay is what makes supersession work.** Remove it and a replaced value comes
+back as current `0.444` of the time. The old and the new statement then compete
+forever on equal weight, and the more often the old one was said, the better it
+does.
+
+**Deep retention is a choice, and here is its price.** The last row turns
+forgetting off entirely: every fact past the threshold becomes recoverable,
+`deep_retention` goes to `1.000`. It costs `0.444` stale values and ten points
+of precision. That is the trade this design makes, stated as a number rather
+than as a preference.
+
+### The age gate does not earn its place
+
+Removing it changes nothing. Not coverage, not precision, not hallucination,
+not stale rate. Repeated at `d = 4096` and `d = 8192`, 8 seeds each: still
+nothing.
+
+The reason is in its own constant. The forgetting threshold of 111.33 days is
+`45 × log₂(1/0.18)`, that is, **derived from the weight floor**. The floor
+evicts a decayed fact when the trace is built; the age gate refuses it again at
+query time. They encode one boundary twice, and by the time the second runs the
+first has already cleared the room.
+
+An earlier note in this file credited the age gate with removing 3 of 5 errors.
+That measurement does not reproduce here, and this file cannot say why from
+where it stands: either something else changed since, or it was taken on a
+configuration this table does not cover. The claim is withdrawn rather than
+explained away.
+
+The guard is kept, because it costs nothing and it states an intent the floor
+only implies. But it is documented for what it is: redundant at every operating
+point measured so far, not load-bearing.
+
+Reproduce with `python ablation.py --seeds 8 --dim 2048`.
+
 ## The gate is a dial, not a number
 
 Saying the layer answers half the questions describes one setting. 5 seeds:
@@ -316,6 +375,7 @@ after the last one ends.
 | `sweep.py` | the offline table, multi-seed |
 | `interference.py` | precision against subject concentration |
 | `poisoning.py` | how many repetitions of a lie beat the truth |
+| `ablation.py` | what each guard buys, measured by removing it |
 | `gate_sweep.py` | the precision/coverage curve |
 | `error_analysis.py` | outcome by question class |
 | `bootstrap_report.py` | differences with intervals |

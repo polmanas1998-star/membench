@@ -1,0 +1,66 @@
+{
+  "dim": 4096,
+  "graines": 8,
+  "variantes": [
+    {
+      "variante": "complete",
+      "retire": "rien",
+      "coverage": 0.6009615384615384,
+      "gated_precision": 1.0,
+      "hallucination": 0.0,
+      "supersession_error": 0.0,
+      "deep_retention": 0.0,
+      "age_awareness": 1.0
+    },
+    {
+      "variante": "sans garde z",
+      "retire": "le seuil de confiance",
+      "coverage": 0.8653846153846154,
+      "gated_precision": 0.7555555555555555,
+      "hallucination": 1.0,
+      "supersession_error": 0.0,
+      "deep_retention": 0.0,
+      "age_awareness": 1.0
+    },
+    {
+      "variante": "sans garde d'age",
+      "retire": "le refus au-dela de 111 jours",
+      "coverage": 0.6057692307692308,
+      "gated_precision": 1.0,
+      "hallucination": 0.0,
+      "supersession_error": 0.0,
+      "deep_retention": 0.0,
+      "age_awareness": 1.0
+    },
+    {
+      "variante": "sans decroissance",
+      "retire": "la demi-vie de 45 jours",
+      "coverage": 0.6538461538461539,
+      "gated_precision": 0.866659350307287,
+      "hallucination": 0.0,
+      "supersession_error": 0.5,
+      "deep_retention": 0.0,
+      "age_awareness": 1.0
+    },
+    {
+      "variante": "sans plancher",
+      "retire": "l'eviction sous 0,18",
+      "coverage": 0.5961538461538461,
+      "gated_precision": 1.0,
+      "hallucination": 0.0,
+      "supersession_error": 0.0,
+      "deep_retention": 0.0,
+      "age_awareness": 1.0
+    },
+    {
+      "variante": "memoire eternelle",
+      "retire": "decroissance ET garde d'age",
+      "coverage": 0.7884615384615384,
+      "gated_precision": 0.8895663956639566,
+      "hallucination": 0.0,
+      "supersession_error": 0.5,
+      "deep_retention": 1.0,
+      "age_awareness": 1.0
+    }
+  ]
+}
