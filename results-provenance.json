@@ -1,0 +1,129 @@
+{
+  "dim": 2048,
+  "graines": 40,
+  "attaque": [
+    {
+      "mensonges": 1,
+      "tout_compte": {
+        "mensonge": 0.4,
+        "verite": 0.575,
+        "silence": 0.025,
+        "z_median": 4.732
+      },
+      "un_vote": {
+        "mensonge": 0.4,
+        "verite": 0.575,
+        "silence": 0.025,
+        "z_median": 4.732
+      }
+    },
+    {
+      "mensonges": 2,
+      "tout_compte": {
+        "mensonge": 0.875,
+        "verite": 0.125,
+        "silence": 0.0,
+        "z_median": 5.094
+      },
+      "un_vote": {
+        "mensonge": 0.4,
+        "verite": 0.575,
+        "silence": 0.025,
+        "z_median": 4.732
+      }
+    },
+    {
+      "mensonges": 3,
+      "tout_compte": {
+        "mensonge": 1.0,
+        "verite": 0.0,
+        "silence": 0.0,
+        "z_median": 6.151
+      },
+      "un_vote": {
+        "mensonge": 0.4,
+        "verite": 0.575,
+        "silence": 0.025,
+        "z_median": 4.732
+      }
+    },
+    {
+      "mensonges": 4,
+      "tout_compte": {
+        "mensonge": 1.0,
+        "verite": 0.0,
+        "silence": 0.0,
+        "z_median": 6.151
+      },
+      "un_vote": {
+        "mensonge": 0.4,
+        "verite": 0.575,
+        "silence": 0.025,
+        "z_median": 4.732
+      }
+    },
+    {
+      "mensonges": 6,
+      "tout_compte": {
+        "mensonge": 1.0,
+        "verite": 0.0,
+        "silence": 0.0,
+        "z_median": 6.151
+      },
+      "un_vote": {
+        "mensonge": 0.4,
+        "verite": 0.575,
+        "silence": 0.025,
+        "z_median": 4.732
+      }
+    },
+    {
+      "mensonges": 10,
+      "tout_compte": {
+        "mensonge": 1.0,
+        "verite": 0.0,
+        "silence": 0.0,
+        "z_median": 6.151
+      },
+      "un_vote": {
+        "mensonge": 0.4,
+        "verite": 0.575,
+        "silence": 0.025,
+        "z_median": 4.732
+      }
+    },
+    {
+      "mensonges": 20,
+      "tout_compte": {
+        "mensonge": 1.0,
+        "verite": 0.0,
+        "silence": 0.0,
+        "z_median": 6.151
+      },
+      "un_vote": {
+        "mensonge": 0.4,
+        "verite": 0.575,
+        "silence": 0.025,
+        "z_median": 4.732
+      }
+    }
+  ],
+  "cout_honnete": [
+    {
+      "regle": "tout compte (aujourd'hui)",
+      "coverage": 0.4963942307692308,
+      "gated_precision": 0.9951573849878934,
+      "retention": 1.0,
+      "hallucination": 0.011363636363636364,
+      "supersession_error": 0.0
+    },
+    {
+      "regle": "un vote par source",
+      "coverage": 0.5384615384615384,
+      "gated_precision": 0.9977678571428571,
+      "retention": 1.0,
+      "hallucination": 0.005681818181818182,
+      "supersession_error": 0.0
+    }
+  ]
+}
