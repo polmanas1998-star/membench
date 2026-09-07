@@ -1,0 +1,188 @@
+{
+  "dim": 2048,
+  "z_gate": 4.0,
+  "pieces": [
+    {
+      "piece": "temoin sain",
+      "verdict": "SAIN",
+      "leve": false,
+      "justes": 18,
+      "faux": 0,
+      "muettes": 0,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "piece": "horloge reculee 60 j",
+      "verdict": "TIENT",
+      "leve": false,
+      "justes": 18,
+      "faux": 0,
+      "muettes": 0,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "piece": "horloge avancee 10 ans",
+      "verdict": "BRUYANT (muet)",
+      "leve": false,
+      "justes": 0,
+      "faux": 0,
+      "muettes": 18,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "piece": "magasin minuscule",
+      "verdict": "SILENCIEUX",
+      "leve": false,
+      "justes": 6,
+      "faux": 0,
+      "muettes": 0,
+      "connues": 6,
+      "inventees": 6,
+      "absentes": 6,
+      "z_max_invente": 1000000000.0
+    },
+    {
+      "piece": "saturation x10",
+      "verdict": "SILENCIEUX",
+      "leve": false,
+      "justes": 7,
+      "faux": 0,
+      "muettes": 11,
+      "connues": 18,
+      "inventees": 2,
+      "absentes": 6,
+      "z_max_invente": 4.828522750944785
+    },
+    {
+      "piece": "trace corrompue (NaN)",
+      "verdict": "BRUYANT (muet)",
+      "leve": false,
+      "justes": 0,
+      "faux": 0,
+      "muettes": 18,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    }
+  ],
+  "detention": [
+    {
+      "jalon": "depart",
+      "jours": 0,
+      "leve": false,
+      "justes": 18,
+      "faux": 0,
+      "muettes": 0,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "jalon": "1 semaine",
+      "jours": 7,
+      "leve": false,
+      "justes": 18,
+      "faux": 0,
+      "muettes": 0,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "jalon": "1 mois",
+      "jours": 30,
+      "leve": false,
+      "justes": 18,
+      "faux": 0,
+      "muettes": 0,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "jalon": "45 j (demi-vie)",
+      "jours": 45,
+      "leve": false,
+      "justes": 18,
+      "faux": 0,
+      "muettes": 0,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "jalon": "90 j",
+      "jours": 90,
+      "leve": false,
+      "justes": 18,
+      "faux": 0,
+      "muettes": 0,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "jalon": "111 j (seuil)",
+      "jours": 111,
+      "leve": false,
+      "justes": 18,
+      "faux": 0,
+      "muettes": 0,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "jalon": "6 mois",
+      "jours": 182,
+      "leve": false,
+      "justes": 0,
+      "faux": 0,
+      "muettes": 18,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "jalon": "1 an",
+      "jours": 365,
+      "leve": false,
+      "justes": 0,
+      "faux": 0,
+      "muettes": 18,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    },
+    {
+      "jalon": "10 ans",
+      "jours": 3650,
+      "leve": false,
+      "justes": 0,
+      "faux": 0,
+      "muettes": 18,
+      "connues": 18,
+      "inventees": 0,
+      "absentes": 6,
+      "z_max_invente": 0.0
+    }
+  ]
+}

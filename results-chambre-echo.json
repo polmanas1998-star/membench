@@ -1,0 +1,88 @@
+{
+  "dim": 2048,
+  "tours": 8,
+  "z_gate": 4.0,
+  "lignes": [
+    {
+      "tour": 0,
+      "accord": 6,
+      "juste": 18,
+      "contaminee": 1,
+      "annulee": 0,
+      "n": 18,
+      "z_median": 14.1
+    },
+    {
+      "tour": 1,
+      "accord": 16,
+      "juste": 16,
+      "contaminee": 0,
+      "annulee": 1,
+      "n": 18,
+      "z_median": 14.143
+    },
+    {
+      "tour": 2,
+      "accord": 16,
+      "juste": 16,
+      "contaminee": 0,
+      "annulee": 1,
+      "n": 18,
+      "z_median": 14.763
+    },
+    {
+      "tour": 3,
+      "accord": 17,
+      "juste": 17,
+      "contaminee": 0,
+      "annulee": 1,
+      "n": 18,
+      "z_median": 14.989
+    },
+    {
+      "tour": 4,
+      "accord": 17,
+      "juste": 17,
+      "contaminee": 0,
+      "annulee": 1,
+      "n": 18,
+      "z_median": 14.816
+    },
+    {
+      "tour": 5,
+      "accord": 17,
+      "juste": 17,
+      "contaminee": 0,
+      "annulee": 1,
+      "n": 18,
+      "z_median": 14.616
+    },
+    {
+      "tour": 6,
+      "accord": 17,
+      "juste": 17,
+      "contaminee": 0,
+      "annulee": 1,
+      "n": 18,
+      "z_median": 14.62
+    },
+    {
+      "tour": 7,
+      "accord": 17,
+      "juste": 17,
+      "contaminee": 0,
+      "annulee": 1,
+      "n": 18,
+      "z_median": 14.624
+    },
+    {
+      "tour": 8,
+      "accord": 17,
+      "juste": 17,
+      "contaminee": 0,
+      "annulee": 1,
+      "n": 18,
+      "z_median": 14.628
+    }
+  ]
+}
