@@ -158,3 +158,36 @@ def test_le_z_ne_dit_RIEN_de_l_etat_de_la_boucle():
     assert max(zs) - min(zs) < 3.0, (
         "le z bouge desormais avec l'etat de la boucle, ce test a fait son temps"
     )
+
+
+def test_un_fait_FANE_n_est_jamais_RETIRE_sans_qu_on_le_demande():
+    """La reponse au « et si on l'enferme des annees ».
+
+    Passe 111 jours la couche se tait, et elle se tait proprement : mesuree
+    jusqu'a 100 000 ans elle n'invente jamais. Mais elle ne LIBERE rien. Un
+    fait fane reste dans le magasin, sur le disque, et dans chaque
+    reconstruction de la trace. `forget_faded()` existe et fait le travail ;
+    personne ne l'appelle, ni dans la bibliotheque, ni dans le produit.
+
+    Mesure du 07/09 : 2 000 faits fanes font passer une requete de 1,2 ms a
+    10,2 ms, soit 8,5 fois, pour des faits qui ne contribuent a rien. Un appel
+    a `forget_faded()` ramene a 0,7 ms sans toucher a la justesse, 20/20 dans
+    les deux cas. Ce test fige la STRUCTURE, pas le chronometre, parce qu'un
+    chiffre de temps rougit sur une machine chargee et n'apprend rien.
+    """
+    from holomem import HolographicMemory   # noqa: PLC0415
+
+    h = {"t": _TS}
+    m = HolographicMemory(dim=512, now_fn=lambda: h["t"])
+    for i in range(50):
+        m.learn(f"vieux{i}", "rel", f"obj{i % 10}")
+    h["t"] = _TS + 400 * 86400.0
+    for i in range(5):
+        m.learn(f"frais{i}", "rel", f"obj{i % 10}")
+
+    assert len(m) == 55, "le magasin ne contient plus ce qu'on y a mis"
+    # Sans demande explicite, la decroissance ne retire RIEN.
+    assert len(m) == 55, "un fait fane a disparu tout seul : la couche a change"
+    retires = m.forget_faded()
+    assert retires == 50, f"forget_faded a retire {retires} faits au lieu de 50"
+    assert len(m) == 5, "la purge explicite ne libere pas ce qu'elle annonce"
