@@ -2,18 +2,23 @@
 """Les deux chambres : ce que la couche fait quand l'environnement ment, et
 quand elle n'entend plus que sa jumelle.
 
-CE QUE CES TESTS FIGENT (2026-09-07, d=2048, porte z >= 4)
-----------------------------------------------------------
-CHAMBRE CLOSE. Six pieces. Deux sont SILENCIEUSES, c'est-a-dire qu'elles
-repondent au-dessus du seuil sans que rien dans la reponse ne dise que la piece
-etait truquee :
+CE QUE CES TESTS FIGENT (mesure 2026-09-07, remesure 2026-09-12, d=2048,
+porte z >= 4)
+--------------------------------------------------------------------------
+CHAMBRE CLOSE. Six pieces. UNE est SILENCIEUSE, c'est-a-dire qu'elle repond
+au-dessus du seuil sans que rien dans la reponse ne dise que la piece etait
+truquee :
 
-  · magasin minuscule : 6 inventions sur 6, a z = inf. La cause est explicite
-    dans `query_gated` : `if len(scored) < 3: return scored[0][1], math.inf`.
-    Sous trois objets distincts la porte ne peut pas douter, alors elle ouvre.
-    Un service qui vient de demarrer, ou dont la purge a tout efface, est donc
-    maximalement sur de lui.
-  · saturation x10 : 2 inventions sur 6, a z 4,83, au-dessus du seuil.
+  · saturation x10 : 2 inventions sur 6, a z 4,83, au-dessus du seuil. PAS
+    corrigee.
+
+Il y en avait DEUX le 07/09. Le magasin minuscule rendait 6 inventions sur 6 a
+z = inf, parce que `query_gated` faisait `if len(scored) < 3: return
+scored[0][1], math.inf` : sous trois objets distincts la porte ne peut pas
+douter, alors elle ouvrait. Un service qui venait de demarrer, ou dont une
+demande d'effacement venait de tout effacer, etait donc maximalement sur de
+lui. Corrige dans holomem le 08/09 par un plancher absolu, et le test qui
+gelait ce defaut a ete remplace par celui qui gele le correctif ET son prix.
 
 Les quatre autres tiennent ou se taisent, y compris la trace corrompue et
 l'horloge avancee de dix ans. Le temoin sain repond 18/18 sans rien inventer,
@@ -73,20 +78,38 @@ def test_le_temoin_sain_repond_et_n_invente_rien():
     assert r["inventees"] == 0, "elle invente alors que rien n'est truque"
 
 
-def test_un_magasin_MINUSCULE_repond_a_tout_avec_une_confiance_INFINIE():
-    """Le defaut le plus grave des six, et il est structurel.
+def test_un_magasin_MINUSCULE_n_invente_plus_RIEN():
+    """Le defaut le plus grave des six, et il est CORRIGE depuis le 08/09/2026.
 
-    `query_gated` rend `math.inf` sous trois candidats. Un magasin qui vient
-    d'etre purge repond donc a n'importe quelle question, au-dessus de tout
-    seuil imaginable. Ce test rougira le jour ou la porte se fermera dans ce
-    cas, et ce jour-la il faudra le supprimer en s'en rejouissant.
+    Ce test en remplace un qui gelait le defaut et qui exigeait sa propre
+    suppression le jour ou la porte se fermerait. Elle s'est fermee, il est
+    supprime, et voici ce qui le remplace.
+
+    CE QUI ETAIT MESURE LE 07/09 : `query_gated` rendait `math.inf` sous trois
+    candidats, faute de dispersion contre laquelle douter. Un magasin qui
+    venait de demarrer, ou qu'une demande d'effacement venait de vider,
+    repondait donc a TOUT au-dessus de n'importe quel seuil : 6 inventions sur
+    6 sur des paires que personne n'avait enoncees.
+
+    CE QUI LE REMPLACE : un plancher absolu, `MIN_ABSOLUTE = 0.40`, legitime
+    ICI et nulle part ailleurs parce que les deux populations ne se recouvrent
+    pas dans ce regime (pire vrai 0.6403, meilleur faux 0.1651 sur 30 graines).
+
+    CE QUE LE CORRECTIF COUTE, et c'est la moitie du test : deux reponses
+    JUSTES sont devenues muettes. 6 justes avant, 4 justes et 2 muettes apres.
+    Un correctif dont on ne publie pas le prix se paie quand meme.
     """
     r = CC.piece_magasin_minuscule(_DIM, _TS, _Z)
-    assert r["inventees"] == r["absentes"], (
-        "le magasin minuscule n'invente plus sur tout : la porte a change"
+    assert r["inventees"] == 0, (
+        "le magasin minuscule invente de nouveau : le plancher a saute"
     )
-    assert r["z_max_invente"] >= 1e9, "la confiance n'est plus infinie"
-    assert CC.verdict("magasin minuscule", r) == "SILENCIEUX"
+    assert r["z_max_invente"] == 0.0, "une confiance est rendue sur une invention"
+    assert r["faux"] == 0, "il repond FAUX sur une paire connue"
+    # Le prix, epingle. S'il bouge, c'est que le plancher a bouge avec.
+    assert (r["justes"], r["muettes"]) == (4, 2), (
+        f"le prix du plancher a change : {r['justes']} justes, {r['muettes']} muettes"
+    )
+    assert CC.verdict("magasin minuscule", r) == "TIENT"
 
 
 def test_une_horloge_avancee_de_dix_ans_fait_TAIRE_et_pas_MENTIR():

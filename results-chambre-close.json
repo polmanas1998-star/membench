@@ -40,15 +40,15 @@
     },
     {
       "piece": "magasin minuscule",
-      "verdict": "SILENCIEUX",
+      "verdict": "TIENT",
       "leve": false,
-      "justes": 6,
+      "justes": 4,
       "faux": 0,
-      "muettes": 0,
+      "muettes": 2,
       "connues": 6,
-      "inventees": 6,
+      "inventees": 0,
       "absentes": 6,
-      "z_max_invente": 1000000000.0
+      "z_max_invente": 0.0
     },
     {
       "piece": "saturation x10",

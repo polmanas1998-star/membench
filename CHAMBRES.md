@@ -3,7 +3,8 @@
 What the memory layer does when its environment lies, and when the only voice
 it can still hear is another copy of itself.
 
-Measured 2026-09-07. `d = 2048`, gate `z >= 4`. Everything here runs offline
+Measured 2026-09-07, re-measured 2026-09-12 after the fix below.
+`d = 2048`, gate `z >= 4`. Everything here runs offline
 and costs zero tokens, because the clock is injected rather than waited for.
 
     python chambre_close.py      # the rooms, and the long confinement
@@ -42,7 +43,7 @@ Six rooms. Each one is a failure that actually happens, not a curiosity.
 | healthy control | 18/18 | 0 | 0 | 0/6 | - | sane |
 | clock rewound 60 days | 18/18 | 0 | 0 | 0/6 | - | holds |
 | clock forward 10 years | 0 | 0 | 18 | 0/6 | - | loud (mute) |
-| **tiny store** | 6 | 0 | 0 | **6/6** | **inf** | **quiet** |
+| tiny store | 4 | 0 | 2 | 0/6 | - | holds (fixed 08/09) |
 | **saturation x10** | 7 | 0 | 11 | **2/6** | **4.83** | **quiet** |
 | corrupted trace (NaN) | 0 | 0 | 18 | 0/6 | - | loud (mute) |
 
@@ -54,10 +55,11 @@ The healthy control matters as much as the rest. It answers 18/18 and invents
 nothing. Without it, a bench that finds everyone guilty would only be measuring
 its own severity.
 
-### The tiny store, and why it is structural
+### The tiny store: found here, fixed, and what the fix cost
 
-Six inventions out of six, at infinite confidence. The cause is one line in
-`query_gated`:
+This was the worst of the six and it is the reason this file exists. The
+original measurement, 2026-09-07: six inventions out of six, at infinite
+confidence. One line in `query_gated` caused it:
 
 ```python
 if len(scored) < 3:
@@ -65,14 +67,33 @@ if len(scored) < 3:
 ```
 
 Under three distinct candidate objects there is no spread to be uncertain
-against, so the gate opens rather than closes. The consequence is the opposite
-of what you want: **a service that just started, or whose erasure request just
-emptied it, is maximally confident about everything.** The store is at its
-least informed exactly when it stops doubting.
+against, so the gate opened rather than closed. The consequence was the
+opposite of what you want: **a service that just started, or whose erasure
+request just emptied it, was maximally confident about everything.** The store
+was at its least informed exactly when it stopped doubting.
 
-The comment above that line is honest about the reasoning. The reasoning is
-defensible and the outcome is still wrong, and those are two different
-statements.
+**Fixed in holomem on 2026-09-08**, and the fix was not the obvious one.
+Refusing outright would have been the other extreme, and the test that froze
+the old behaviour was right to call that arbitrary: a store of two objects does
+know its two facts. A third way exists only because the two populations do not
+overlap in this regime. Over 30 seeds at `d` = 128, 256, 512, 2048 and 8192,
+with one and two objects in the pool, the worst score for a fact the store WAS
+told is 0.6403 and the best score for a pair nobody ever stated is 0.1651.
+`MIN_ABSOLUTE` sits at 0.40, near the middle of a 0.4752 gap.
+
+That floor is legitimate there and nowhere else. On a full pool a fixed margin
+of 0.10 admits 0.0% of the answers the z gate admits at precision 1.000, which
+is the whole reason this class moved to a z. The floor applies where a z cannot
+be computed at all.
+
+**What the fix cost, because a price left unpublished gets paid anyway.** Six
+inventions out of six became zero, and two answers that were correct became
+silent: 6 correct before, 4 correct and 2 silent after. That trade is pinned in
+`tests/test_chambres.py` and goes red if the floor moves.
+
+**The remaining quiet room is saturation.** At ten times capacity the layer
+still invents on 2 of 6 pairs nobody stated, at `z` 4.83, and nothing in the
+output reports it. That one is not fixed.
 
 ### The rooms that hold
 
@@ -109,8 +130,8 @@ for a hundred thousand years, without inventing once.
 ### A prediction that was wrong, and what it taught
 
 I expected a narrow band during decay where the candidate pool falls under
-three and the gate starts answering everything at `z = inf`, joining the tiny
-store defect to the passage of time.
+three and the gate starts answering everything, joining the tiny store defect
+of the day to the passage of time.
 
 It never happens. `len(mem)` stays at 18 and the pool at 10 at **every** age,
 because a faded fact leaves the **trace** but never leaves the **store**.
@@ -233,6 +254,7 @@ deployment. A real month-long soak would measure those, and only those.
 ## What the tests freeze
 
 `tests/test_chambres.py`, 8 tests. They exist to go red when the behaviour
-changes, not to prove it is good. Two of them should go red the day someone
-closes the gate under three candidates, and that day they should be deleted
-with satisfaction.
+changes, not to prove it is good. One of them froze the tiny store defect and
+demanded its own deletion the day the gate closed under three candidates. That
+day was 2026-09-08. It is gone, and what replaced it pins the corrected
+behaviour together with its price.
