@@ -176,7 +176,22 @@ def temoin_sans_boucle(dim: int, tours: int, z_gate: float, ts: float) -> dict:
     return {"juste": juste, "n": len(monde)}
 
 
+def _sortie_utf8() -> None:
+    """Sous Windows, une sortie REDIRIGEE retombe en cp1252 et le premier
+    caractere non-ASCII tue le banc apres qu'il a tout calcule.
+
+    Constate le 12/09/2026 : `python chambre_echo.py > sortie.txt` mourait sur
+    un `⚠`, UnicodeEncodeError, alors que la meme commande sans
+    redirection passait. Un banc qui ne survit pas a un `>` est un banc que
+    personne ne peut archiver.
+    """
+    for flux in (sys.stdout, sys.stderr):
+        if hasattr(flux, "reconfigure"):
+            flux.reconfigure(encoding="utf-8", errors="replace")
+
+
 def main() -> int:
+    _sortie_utf8()
     ap = argparse.ArgumentParser()
     ap.add_argument("--dim", type=int, default=2048)
     ap.add_argument("--tours", type=int, default=8)
