@@ -100,8 +100,10 @@ def test_LA_CONFIANCE_MONTE_AVEC_LE_MENSONGE():
 def test_repeter_la_verite_la_defend_un_peu():
     """La seule defense qui existe aujourd'hui, et elle est faible.
 
-    Une verite dite trois fois resiste a un et deux mensonges. Au-dela, c'est
-    un vote pondere et l'attaquant a le dernier mot en repetant plus.
+    Une verite dite trois fois resiste a un et deux mensonges. A trois
+    mensonges c'est une EGALITE, pas une defaite : le poids plafonne a 1,5 des
+    la troisieme ecriture, et repeter davantage n'ajoute plus rien, ni a la
+    verite ni au mensonge. Corrige le 2026-09-13, voir `test_diagonale.py`.
     """
     assert _part(3, 1, "verite") >= 0.9
     assert _part(3, 2, "verite") >= 0.7

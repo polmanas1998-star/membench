@@ -1,0 +1,332 @@
+{
+  "dim": 2048,
+  "graines": 48,
+  "reinforce_step": 0.25,
+  "max_weight": 1.5,
+  "half_life_days": 45.0,
+  "croisement_jours": 26.32,
+  "cellules": [
+    {
+      "verites": 1,
+      "mensonges": 1,
+      "poids_verite": 1.0,
+      "poids_mensonge": 1.0,
+      "verite": 0.625,
+      "silence": 0.0208,
+      "mensonge": 0.3542,
+      "z_median": 4.705
+    },
+    {
+      "verites": 2,
+      "mensonges": 2,
+      "poids_verite": 1.25,
+      "poids_mensonge": 1.25,
+      "verite": 0.625,
+      "silence": 0.0,
+      "mensonge": 0.375,
+      "z_median": 4.82
+    },
+    {
+      "verites": 3,
+      "mensonges": 3,
+      "poids_verite": 1.5,
+      "poids_mensonge": 1.5,
+      "verite": 0.625,
+      "silence": 0.0,
+      "mensonge": 0.375,
+      "z_median": 4.857
+    },
+    {
+      "verites": 4,
+      "mensonges": 4,
+      "poids_verite": 1.5,
+      "poids_mensonge": 1.5,
+      "verite": 0.625,
+      "silence": 0.0,
+      "mensonge": 0.375,
+      "z_median": 4.857
+    },
+    {
+      "verites": 3,
+      "mensonges": 4,
+      "poids_verite": 1.5,
+      "poids_mensonge": 1.5,
+      "verite": 0.625,
+      "silence": 0.0,
+      "mensonge": 0.375,
+      "z_median": 4.857
+    },
+    {
+      "verites": 1,
+      "mensonges": 3,
+      "poids_verite": 1.0,
+      "poids_mensonge": 1.5,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.076
+    },
+    {
+      "verites": 1,
+      "mensonges": 4,
+      "poids_verite": 1.0,
+      "poids_mensonge": 1.5,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.076
+    },
+    {
+      "verites": 1,
+      "mensonges": 20,
+      "poids_verite": 1.0,
+      "poids_mensonge": 1.5,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.076
+    },
+    {
+      "verites": 1,
+      "mensonges": 2,
+      "poids_verite": 1.0,
+      "poids_mensonge": 1.25,
+      "verite": 0.125,
+      "silence": 0.0,
+      "mensonge": 0.875,
+      "z_median": 5.077
+    },
+    {
+      "verites": 2,
+      "mensonges": 3,
+      "poids_verite": 1.25,
+      "poids_mensonge": 1.5,
+      "verite": 0.125,
+      "silence": 0.0,
+      "mensonge": 0.875,
+      "z_median": 5.111
+    },
+    {
+      "verites": 2,
+      "mensonges": 1,
+      "poids_verite": 1.25,
+      "poids_mensonge": 1.0,
+      "verite": 0.8958,
+      "silence": 0.0,
+      "mensonge": 0.1042,
+      "z_median": 5.453
+    },
+    {
+      "verites": 3,
+      "mensonges": 2,
+      "poids_verite": 1.5,
+      "poids_mensonge": 1.25,
+      "verite": 0.8958,
+      "silence": 0.0,
+      "mensonge": 0.1042,
+      "z_median": 5.413
+    }
+  ],
+  "correction_tardive": [
+    {
+      "fond_reconfirme": true,
+      "mensonges": 3,
+      "jours": 0,
+      "poids_mensonge": 1.5,
+      "verite": 0.0208,
+      "silence": 0.0,
+      "mensonge": 0.9792,
+      "z_median": 5.686
+    },
+    {
+      "fond_reconfirme": true,
+      "mensonges": 3,
+      "jours": 14,
+      "poids_mensonge": 1.209,
+      "verite": 0.1667,
+      "silence": 0.0208,
+      "mensonge": 0.8125,
+      "z_median": 4.811
+    },
+    {
+      "fond_reconfirme": true,
+      "mensonges": 3,
+      "jours": 27,
+      "poids_mensonge": 0.9896,
+      "verite": 0.6042,
+      "silence": 0.0417,
+      "mensonge": 0.3542,
+      "z_median": 4.506
+    },
+    {
+      "fond_reconfirme": true,
+      "mensonges": 3,
+      "jours": 45,
+      "poids_mensonge": 0.75,
+      "verite": 0.7917,
+      "silence": 0.1458,
+      "mensonge": 0.0625,
+      "z_median": 4.982
+    },
+    {
+      "fond_reconfirme": true,
+      "mensonges": 3,
+      "jours": 90,
+      "poids_mensonge": 0.375,
+      "verite": 0.9792,
+      "silence": 0.0208,
+      "mensonge": 0.0,
+      "z_median": 6.537
+    },
+    {
+      "fond_reconfirme": true,
+      "mensonges": 4,
+      "jours": 0,
+      "poids_mensonge": 1.5,
+      "verite": 0.0208,
+      "silence": 0.0,
+      "mensonge": 0.9792,
+      "z_median": 5.686
+    },
+    {
+      "fond_reconfirme": true,
+      "mensonges": 4,
+      "jours": 14,
+      "poids_mensonge": 1.209,
+      "verite": 0.1667,
+      "silence": 0.0208,
+      "mensonge": 0.8125,
+      "z_median": 4.811
+    },
+    {
+      "fond_reconfirme": true,
+      "mensonges": 4,
+      "jours": 27,
+      "poids_mensonge": 0.9896,
+      "verite": 0.6042,
+      "silence": 0.0417,
+      "mensonge": 0.3542,
+      "z_median": 4.506
+    },
+    {
+      "fond_reconfirme": true,
+      "mensonges": 4,
+      "jours": 45,
+      "poids_mensonge": 0.75,
+      "verite": 0.7917,
+      "silence": 0.1458,
+      "mensonge": 0.0625,
+      "z_median": 4.982
+    },
+    {
+      "fond_reconfirme": true,
+      "mensonges": 4,
+      "jours": 90,
+      "poids_mensonge": 0.375,
+      "verite": 0.9792,
+      "silence": 0.0208,
+      "mensonge": 0.0,
+      "z_median": 6.537
+    },
+    {
+      "fond_reconfirme": false,
+      "mensonges": 3,
+      "jours": 0,
+      "poids_mensonge": 1.5,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.076
+    },
+    {
+      "fond_reconfirme": false,
+      "mensonges": 3,
+      "jours": 14,
+      "poids_mensonge": 1.209,
+      "verite": 0.1042,
+      "silence": 0.0,
+      "mensonge": 0.8958,
+      "z_median": 5.142
+    },
+    {
+      "fond_reconfirme": false,
+      "mensonges": 3,
+      "jours": 27,
+      "poids_mensonge": 0.9896,
+      "verite": 0.6458,
+      "silence": 0.0,
+      "mensonge": 0.3542,
+      "z_median": 4.806
+    },
+    {
+      "fond_reconfirme": false,
+      "mensonges": 3,
+      "jours": 45,
+      "poids_mensonge": 0.75,
+      "verite": 1.0,
+      "silence": 0.0,
+      "mensonge": 0.0,
+      "z_median": 6.151
+    },
+    {
+      "fond_reconfirme": false,
+      "mensonges": 3,
+      "jours": 90,
+      "poids_mensonge": 0.375,
+      "verite": 1.0,
+      "silence": 0.0,
+      "mensonge": 0.0,
+      "z_median": 12.235
+    },
+    {
+      "fond_reconfirme": false,
+      "mensonges": 4,
+      "jours": 0,
+      "poids_mensonge": 1.5,
+      "verite": 0.0,
+      "silence": 0.0,
+      "mensonge": 1.0,
+      "z_median": 6.076
+    },
+    {
+      "fond_reconfirme": false,
+      "mensonges": 4,
+      "jours": 14,
+      "poids_mensonge": 1.209,
+      "verite": 0.1042,
+      "silence": 0.0,
+      "mensonge": 0.8958,
+      "z_median": 5.142
+    },
+    {
+      "fond_reconfirme": false,
+      "mensonges": 4,
+      "jours": 27,
+      "poids_mensonge": 0.9896,
+      "verite": 0.6458,
+      "silence": 0.0,
+      "mensonge": 0.3542,
+      "z_median": 4.806
+    },
+    {
+      "fond_reconfirme": false,
+      "mensonges": 4,
+      "jours": 45,
+      "poids_mensonge": 0.75,
+      "verite": 1.0,
+      "silence": 0.0,
+      "mensonge": 0.0,
+      "z_median": 6.151
+    },
+    {
+      "fond_reconfirme": false,
+      "mensonges": 4,
+      "jours": 90,
+      "poids_mensonge": 0.375,
+      "verite": 1.0,
+      "silence": 0.0,
+      "mensonge": 0.0,
+      "z_median": 12.235
+    }
+  ]
+}

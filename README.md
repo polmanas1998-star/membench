@@ -78,9 +78,11 @@ perfect.
 ### Two repetitions of a lie beat one statement of truth
 
 The trace is a **sum** of `bind(S, R, O)`. Nothing in that addition separates a
-fact said once from a fact said twenty times, or a true one from a false one.
-So the question an industrial buyer asks first is not whether poisoning is
-possible, but from how many repetitions, and whether it shows.
+true fact from a false one. Repetition counts, but only up to a point:
+`learn()` on a fact already stored raises its weight by 0.25 and caps it at 1.5,
+so the third write and the twentieth are the same store (corrected 2026-09-13,
+see below). So the question an industrial buyer asks first is not whether
+poisoning is possible, but from how many repetitions, and whether it shows.
 
 Threat model, stated: the attacker writes to the memory on the same terms as
 the legitimate source. 12 attacked pairs per point, `d = 2048`, 60 background
@@ -101,14 +103,71 @@ would be defensible: it would degrade cleanly. It does not go quiet. It
 asserts.
 
 **The confidence score rises with the attack.** From `4.45` at one repetition to
-`6.54` at twenty. The gate does not merely miss the poisoning, it **rewards**
+`6.11` at three. The gate does not merely miss the poisoning, it **rewards**
 it: repetition makes the lie sharp, and sharpness is exactly what the gate
 scores. A guard that measures how clearly a memory stands out will measure a
 forgery just as clearly.
 
-Repeating the truth helps a little and not for long. Stated three times, it
-survives one and two lies; past that it is a weighted vote and whoever repeats
-more wins.
+The rows at 3, 8 and 20 lies are one store measured three times: the lie weighs
+1.5 in all of them. `poisoning.py` draws the attacked pair from the seed
+`g * 1000 + lies`, so each row asks about different pairs, and the drift from
+`6.11` to `6.54` is those pairs, not the extra lies.
+
+Repeating the truth helps, up to the same cap. Stated three times, it survives
+one and two lies. At three lies it is a tie, 1.5 against 1.5, and repeating
+either side any further adds nothing.
+
+#### Corrected 2026-09-13: repetition caps at three writes
+
+Two claims made about this bench were wrong, and both came from treating the
+number of writes as the mass. They are withdrawn here rather than dropped.
+
+- *"Past that it is a weighted vote and whoever repeats more wins"*, in this
+  README until today. Past three writes nobody gains anything.
+- *"Three truths don't survive four lies"*, and *"after one half life one
+  correction still loses to three stale writes"*, in a reply on the r/LLMDevs
+  thread on 2026-09-07. The first compared two ties (33 % and 58 % were two
+  draws of 1.5 against 1.5). The second is backwards: three stale writes weigh
+  0.75 after 45 days and a fresh correction weighs 1.0.
+
+The test that exposed it was proposed on that thread by Bright_Mix_773: the
+tie diagonal. `diagonale.py` asks the **same 48 pairs** in every cell, so two
+cells of equal weight have to return the same thing, z included.
+
+| truths | lies | weights | truth | silence | **lie** | median z |
+|---|---|---|---|---|---|---|
+| 1 | 1 | 1.00 / 1.00 | 0.62 | 0.02 | 0.35 | 4.71 |
+| 2 | 2 | 1.25 / 1.25 | 0.62 | 0.00 | 0.38 | 4.82 |
+| 3 | 3 | 1.50 / 1.50 | 0.62 | 0.00 | 0.38 | 4.86 |
+| 4 | 4 | 1.50 / 1.50 | 0.62 | 0.00 | 0.38 | 4.86 |
+| 3 | 4 | 1.50 / 1.50 | 0.62 | 0.00 | 0.38 | 4.86 |
+| 1 | 3 | 1.00 / 1.50 | 0.00 | 0.00 | **1.00** | 6.08 |
+| 1 | 20 | 1.00 / 1.50 | 0.00 | 0.00 | **1.00** | 6.08 |
+| 2 | 1 | 1.25 / 1.00 | 0.90 | 0.00 | 0.10 | 5.45 |
+| 3 | 2 | 1.50 / 1.25 | 0.90 | 0.00 | 0.10 | 5.41 |
+
+The diagonal is flat, and 3 against 4 and 1 against 20 are identical to 3
+against 3 and 1 against 3 down to the z. A tie comes out at 38 % rather than
+50 % on these 48 pairs; with the pairs fixed, every tie is broken the same way.
+
+One correction written T days after three lies (four lies give the same
+numbers). Decay runs from `last_seen_ts`, not `created_ts`, so the bench moves
+the clock rather than backdating the write. Two versions of the rest of the
+store:
+
+| days later | lie weight | truth, background re-confirmed | lie | truth, background aged | lie |
+|---|---|---|---|---|---|
+| 0 | 1.50 | 0.02 | 0.98 | 0.00 | 1.00 |
+| 14 | 1.21 | 0.17 | 0.81 | 0.10 | 0.90 |
+| 27 | 0.99 | 0.60 | 0.35 | 0.65 | 0.35 |
+| 45 | 0.75 | **0.79** | 0.06 | **1.00** | 0.00 |
+| 90 | 0.38 | 0.98 | 0.00 | 1.00 | 0.00 |
+
+The weights cross at 45 × log2(1.5) ≈ 26 days and the outcome flips right
+there. Re-confirming the background raises it to 1.25 and makes the correction's
+job harder, which is why that column is the conservative one.
+
+Reproduce with `python diagonale.py --seeds 48`, offline, about 40 seconds.
 
 **This is not an implementation bug.** A superposition carries no provenance, so
 a legitimately reinforced fact and a repetition attack are structurally the same
@@ -332,7 +391,7 @@ precise. **The score measures how cleanly one candidate dominates the trace.**
 On an honest trace, dominance and truth coincide almost perfectly, which is the
 0.956 above. On a scrambled trace, dominance survives and truth does not. Under
 a repetition attack, dominance is purchasable, and the score rises as the lie is
-repeated.
+repeated, up to the third write where its weight caps.
 
 The gate is not weak mathematics. It is a correct measurement of the wrong thing
 whenever the trace stops being trustworthy, and its validity is inherited
@@ -676,6 +735,7 @@ never quietly turned into a skip.
 | `sweep.py` | the offline table, multi-seed |
 | `interference.py` | precision against subject concentration |
 | `poisoning.py` | how many repetitions of a lie beat the truth |
+| `diagonale.py` | the tie diagonal, and a correction written days after the lie |
 | `ablation.py` | what each guard buys, measured by removing it |
 | `calibration.py` | whether the confidence score separates right from wrong |
 | `latency.py` | milliseconds per query, against store size |
