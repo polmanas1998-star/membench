@@ -162,3 +162,104 @@ def _tpd_detail(message: str) -> str:
         return (f"plafond quotidien atteint : {int(lim.group(1)):,} jetons/jour, "
                 f"{int(used.group(1)):,} consommes").replace(",", " ")
     return "plafond quotidien atteint"
+
+
+# ---------------------------------------------------------------------------
+# Mistral : le meme banc, un autre fournisseur
+# ---------------------------------------------------------------------------
+#: ⚠ Un banc qui ne sait interroger qu'UN fournisseur mesure ce fournisseur.
+#: Les chiffres du 16/09 sur les normes abrogees ont ete pris sur gpt-oss-120b ;
+#: tant qu'un second modele ne les a pas rejoues, on ne sait pas si la faute
+#: vient de la memoire ou du modele qui la lit.
+MISTRAL_BASE = "https://api.mistral.ai/v1"
+MISTRAL_DEFAUT = "mistral-large-latest"
+
+
+def load_mistral_key(path: Path | None = None) -> str:
+    """Rend la cle Mistral sans jamais l'imprimer.
+
+    L'environnement gagne ; sinon on lit un `.env` designe par
+    MEMBENCH_ENV_MISTRAL, et a defaut celui du depot produit. Le format de cle
+    n'est pas devinable comme `gsk_...`, donc on cherche la LIGNE nommee.
+    """
+    key = os.environ.get("MISTRAL_API_KEY")
+    if key:
+        return key
+    src = path or Path(os.environ.get(
+        "MEMBENCH_ENV_MISTRAL",
+        Path(__file__).resolve().parents[2] / "dermioz-ai" / ".env"))
+    if src.is_file():
+        for ligne in src.read_text(encoding="utf-8", errors="ignore").splitlines():
+            if ligne.strip().startswith("MISTRAL_API_KEY="):
+                v = ligne.split("=", 1)[1].strip().strip('"').strip("'")
+                if v:
+                    return v
+    raise RuntimeError(
+        f"aucune cle Mistral. Posez MISTRAL_API_KEY, ou une ligne "
+        f"MISTRAL_API_KEY=... dans {src}")
+
+
+class MistralModel:
+    """Meme interface que `GroqModel` : un appel, et les jetons factures.
+
+    Deliberement sans le SDK maison : l'API est compatible OpenAI, et `httpx`
+    est deja une dependance du produit. Une dependance de plus pour un banc,
+    c'est une raison de plus qu'il ne tourne pas le jour ou on en a besoin.
+    """
+
+    def __init__(self, model: str = MISTRAL_DEFAUT, api_key: str | None = None,
+                 max_retries: int = 6) -> None:
+        import httpx  # noqa: PLC0415
+
+        self.model = model
+        key = api_key or load_mistral_key()
+        self.account = "mistral"
+        self.key_fingerprint = key_fingerprint(key)
+        self._client = httpx.Client(
+            base_url=MISTRAL_BASE, timeout=90.0,
+            headers={"Authorization": f"Bearer {key}",
+                     "Content-Type": "application/json"})
+        self._max_retries = max_retries
+        self.waited_seconds = 0.0
+        self.rate_limited = 0
+
+    def complete(self, system: str, user: str, max_tokens: int = 48) -> Completion:
+        charge = {"model": self.model,
+                  "messages": [{"role": "system", "content": system},
+                               {"role": "user", "content": user}],
+                  "max_tokens": max_tokens, "temperature": 0.0}
+        for attempt in range(self._max_retries + 1):
+            r = self._client.post("/chat/completions", json=charge)
+            if r.status_code == 200:
+                d = r.json()
+                u = d.get("usage") or {}
+                return Completion(
+                    text=(d["choices"][0]["message"]["content"] or "").strip(),
+                    prompt_tokens=int(u.get("prompt_tokens") or 0),
+                    completion_tokens=int(u.get("completion_tokens") or 0))
+            corps = r.text[:400]
+            if r.status_code != 429:
+                raise RuntimeError(f"Mistral HTTP {r.status_code} : {corps}")
+            # Meme distinction que chez Groq : une limite par JOUR ne se
+            # contourne pas en attendant cinquante secondes.
+            if "day" in corps.lower() or "daily" in corps.lower():
+                raise DailyBudgetExhausted(corps)
+            if attempt == self._max_retries:
+                raise RuntimeError(f"Mistral 429 apres {attempt} tentatives : {corps}")
+            wait = float(r.headers.get("retry-after") or 0) or 2.0 * (attempt + 1)
+            self.rate_limited += 1
+            self.waited_seconds += wait
+            time.sleep(wait)
+        raise AssertionError("inatteignable")
+
+
+def modele_pour(nom: str, account: str = "outillage"):
+    """Le fournisseur se DEDUIT du nom du modele, jamais d'un defaut implicite.
+
+    Un banc qui prend le mauvais fournisseur ne plante pas : il mesure autre
+    chose, et le dit dans un nom de colonne que personne ne relit.
+    """
+    if nom.startswith(("mistral", "open-mistral", "open-mixtral", "magistral",
+                       "ministral", "codestral", "pixtral", "devstral")):
+        return MistralModel(model=nom)
+    return GroqModel(model=nom, account=account)
