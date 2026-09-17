@@ -102,7 +102,19 @@ class GroqModel:
 
         self.model = model
         key = api_key or load_groq_key(account)
-        self.account = account
+        # L'ETIQUETTE DOIT DIRE LA VERITE. `load_groq_key` donne la priorite a
+        # `GROQ_API_KEY` : demander `account="outillage"` ne garantit donc rien
+        # des que la variable est posee, et le banc affichait quand meme
+        # « outillage ». Paye le 17/09/2026 : un lanceur qui chargeait le .env
+        # du depot produit par python-dotenv a fait tourner quatre campagnes,
+        # dont ~104 k jetons sur `gpt-oss-120b` — le modele PRINCIPAL de la
+        # production — sur un seau de 200 k par jour. Rien dans la sortie ne
+        # l'a dit. Un choix explicite qu'une variable d'environnement
+        # court-circuite en silence n'est pas un choix.
+        if api_key is None and os.environ.get("GROQ_API_KEY"):
+            self.account = f"{account}?  ENVIRONNEMENT GROQ_API_KEY"
+        else:
+            self.account = account
         self.key_fingerprint = key_fingerprint(key)
         self._client = Groq(api_key=key)
         self._max_retries = max_retries

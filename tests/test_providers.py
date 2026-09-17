@@ -278,3 +278,56 @@ def test_le_gabarit_choisi_est_bien_celui_envoye():
     for key in ("A", "B"):
         StatelessArm(_Spy(), pool, prompt=key).ask("Le cabinet", "se_situe_à")
     assert seen == [PROMPTS["A"], PROMPTS["B"]]
+
+
+def test_l_etiquette_de_compte_AVOUE_quand_l_environnement_l_emporte(monkeypatch):
+    """Un choix explicite qu'une variable court-circuite n'est pas un choix.
+
+    `load_groq_key` donne la priorite a `GROQ_API_KEY` sur le compte demande a
+    l'appel. Demander `account="outillage"` ne garantit donc rien des que la
+    variable est posee — et jusqu'au 17/09/2026 le banc affichait quand meme
+    « outillage ». Quatre campagnes sont parties sur la cle du depot produit,
+    dont ~104 k jetons sur le modele PRINCIPAL de la production, sans que rien
+    dans la sortie ne le dise.
+
+    Ce test exige que l'etiquette avoue le contournement. Il ne demande pas un
+    libelle precis : il demande que le mot ENVIRONNEMENT y figure, parce que
+    c'est ce qu'un humain doit voir passer.
+    """
+    import sys as _sys
+    import types as _types
+
+    import membench.providers as prov
+
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_" + "z" * 40)
+
+    class _FauxGroq:
+        def __init__(self, api_key):
+            self.api_key = api_key
+
+    # `GroqModel` importe `groq` TARDIVEMENT, dans son propre corps : c'est le
+    # module de `sys.modules` qu'il faut remplacer, pas un attribut de
+    # `providers`. Remplacer le mauvais des deux donnerait un test qui passe en
+    # appelant vraiment le fournisseur.
+    faux = _types.ModuleType("groq")
+    faux.Groq = _FauxGroq
+    monkeypatch.setitem(_sys.modules, "groq", faux)
+
+    m = prov.GroqModel(model="openai/gpt-oss-20b", account="outillage")
+    assert "ENVIRONNEMENT" in m.account, (
+        f"l'etiquette dit {m.account!r} alors que la cle vient de "
+        f"l'environnement : le contournement est silencieux.")
+
+    # Une cle passee EXPLICITEMENT n'est pas un contournement : l'appelant sait
+    # ce qu'il fait, et l'accuser ferait crier au loup a chaque fois. Sans ce
+    # cas, un aveu qui ignore `api_key` survivait a la mutation.
+    m_explicite = prov.GroqModel(model="openai/gpt-oss-20b", account="outillage",
+                                 api_key="gsk_" + "y" * 40)
+    assert m_explicite.account == "outillage", (
+        f"une cle passee explicitement est accusee a tort : "
+        f"{m_explicite.account!r}")
+
+    # Et sans la variable, l'etiquette reste celle du compte demande.
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    m2 = prov.GroqModel(model="openai/gpt-oss-20b", account="outillage")
+    assert m2.account == "outillage", m2.account
