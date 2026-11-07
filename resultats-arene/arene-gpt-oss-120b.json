@@ -1629,7 +1629,7 @@
   "n_par_epreuve": 12,
   "k_rag": 6,
   "encodeur_rag": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-  "dermioz_src": "C:/Users/AMIR~1.OGA/AppData/Local/Temp/claude/c0ab682352359788/61f03ab2-c977-43ee-a54d-dc9975c95670/scratchpad/moteur/src",
+  "dermioz_src": "export d'origin/main 3d4122b (dermioz-ai/src)",
   "systeme": "Tu es l'assistant de l'entreprise Ravel Distribution. Nous sommes le 20/10/2026. Réponds à la question à partir du contexte fourni, et de rien d'autre. Termine ta réponse par une ligne, exactement sous cette forme :\nRÉPONSE: <la valeur> (ou RÉPONSE: INCONNUE si le contexte ne permet pas de répondre)",
   "parametres_modele": {
    "reasoning_effort": "low"

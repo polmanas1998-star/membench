@@ -463,7 +463,7 @@ def main() -> None:
     deja["meta"] = {"modele": a.modele, "base_url": a.base_url, "date": datetime.now().isoformat(timespec="seconds"),
                     "aujourdhui_du_banc": AUJOURDHUI.isoformat(), "n_par_epreuve": a.n, "k_rag": K,
                     "encodeur_rag": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-                    "dermioz_src": os.environ.get("DERMIOZ_SRC", ""), "systeme": SYSTEME,
+                    "dermioz_src": "fourni" if os.environ.get("DERMIOZ_SRC") else "", "systeme": SYSTEME,
                     "parametres_modele": m.extra, "attente_429_s": round(deja.get("meta", {}).get("attente_429_s", 0) + m.attente, 1)}
     deja["tableau"] = tab
     sortie.write_text(json.dumps(deja, ensure_ascii=False, indent=1), encoding="utf-8")
