@@ -25,6 +25,54 @@ python -m pytest                         # 73 tests, offline
 
 Full write-up with figures: [`membench-report.pdf`](membench-report.pdf).
 
+## Arena: do LLMs trust a stale value repeated in 8 documents? (Nov 2026)
+
+A person decides a value (say, a 25% discount for a client). Then 8 imported documents keep
+repeating the old proposal (8%): a forwarded email, an Excel export, a wiki page, a draft, a
+scanned note. Half of them even show the date of the original proposal. Which value does the
+model give?
+
+`arene.py` asks the same questions to the **same model** three ways: the whole folder in the
+context window, a plain RAG (FAISS, top 6), and the Dermioz memory layer. Only the way the
+folder is shown changes. Three tests, 12 questions each, one fictional company, temperature 0:
+
+- **stale copies**: the decision vs 8 later copies of the old proposal (right answer: the decision);
+- **real change**: the person really changes their mind (right answer: the new value);
+- **never said**: nobody ever gave the fact (right answer: "I don't know").
+
+| Model | How the folder is shown | Stale value given | Right (stale copies) | Right (real change) | Right (never said) |
+|---|---|---|---|---|---|
+| GPT-OSS 120B | whole folder in context | **9** / 12 | 3 / 12 | 12 / 12 | 12 / 12 |
+| GPT-OSS 120B | plain RAG, top 6 | **9** / 12 | 3 / 12 | 12 / 12 | 12 / 12 |
+| GPT-OSS 120B | Dermioz memory | **0** / 12 | 10 / 12 | 9 / 12 | 12 / 12 |
+| GPT-OSS 20B | whole folder in context | **11** / 12 | 1 / 12 | 12 / 12 | 12 / 12 |
+| GPT-OSS 20B | plain RAG, top 6 | **11** / 12 | 1 / 12 | 12 / 12 | 12 / 12 |
+| GPT-OSS 20B | Dermioz memory | **0** / 12 | 10 / 12 | 9 / 12 | 12 / 12 |
+| Qwen 3.8 27B | whole folder in context | **9** / 12 | 3 / 12 | 12 / 12 | 12 / 12 |
+| Qwen 3.8 27B | plain RAG, top 6 | **6** / 12 | 5 / 12 | 12 / 12 | 12 / 12 |
+| Qwen 3.8 27B | Dermioz memory | **0** / 12 | 10 / 12 | 9 / 12 | 12 / 12 |
+
+Median prompt size on GPT-OSS 120B: 869 tokens with the whole folder, 365 with RAG,
+207 with the memory layer. All raw answers are in [`resultats-arene/`](resultats-arene/).
+
+**What it does not show.** 12 questions per test, synthetic data, one run. The memory layer
+receives facts that are already extracted (who, what, value); reading free text is not
+measured here. It also has a real bug this test found: a question asked with a verb ("what
+day do we deliver X") instead of the field name misses the fact and gets "I don't know"
+(all 5 of its misses). Qwen was cut off 7 times by our 700-token cap and re-asked with 2,500.
+
+**Run it on your model.** Any OpenAI-compatible endpoint works. The whole-folder and RAG
+modes run anywhere; the Dermioz mode needs our engine, which is why its answers are published.
+
+```
+pip install httpx faiss-cpu sentence-transformers
+python -X utf8 arene.py --modele gpt-4.1 --base-url https://api.openai.com/v1 \
+    --cle-env OPENAI_API_KEY --regimes fenetre,rag --sortie my-model.json
+```
+
+(`--regimes fenetre,rag` = whole folder and RAG; flags are in French, sorry.)
+Interactive version and report (French UI): https://dermiozai.com/labo
+
 ## Three layers of control
 
 Most product benchmarks have none of these. They are borrowed openly: HELM
